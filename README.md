@@ -13,7 +13,7 @@ One-command self-hosted stack for Hermes agents.
 - **Open-WebUI** for a web chat UI
 - **Prometheus + Grafana** for observability
 
-Default server address is `100.120.35.91` (Mesh-VPN). Change `.env` before first run if needed.
+Default server address is `REPLACE_WITH_YOUR_MESH_VPN_IP` (Mesh-VPN). Change `.env` before first run if needed.
 
 ## Requirements
 
@@ -39,7 +39,7 @@ That's it. All services start automatically.
 From any machine that has Hermes installed:
 
 ```bash
-bash <(curl -s http://100.120.35.91:8501/bootstrap.sh)
+bash <(curl -s http://REPLACE_WITH_YOUR_MESH_VPN_IP:8501/bootstrap.sh)
 ```
 
 Restart Hermes and you're connected to the whole stack.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-SERVER="${1:-100.120.35.91}"
+SERVER="${1:-REPLACE_WITH_YOUR_MESH_VPN_IP}"
 HERMES_CONF="${HOME}/.hermes/config.yaml"
 
 mkdir -p "${HOME}/.hermes"
