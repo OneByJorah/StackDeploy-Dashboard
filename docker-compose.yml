@@ -41,7 +41,7 @@ services:
     container_name: honcho-db
     environment:
       POSTGRES_USER: honcho
-      POSTGRES_PASSWORD: ${HONCHO_DB_PASSWORD:-honcho-local-pass}
+      POSTGRES_PASSWORD: ${HONCHO_DB_PASSWORD:-REPLACE_WITH_SECURE_PASSWORD}
       POSTGRES_DB: honcho
     volumes:
       - honcho-postgres:/var/lib/postgresql/data
@@ -60,7 +60,7 @@ services:
     container_name: honcho
     network_mode: host
     environment:
-      DB_CONNECTION_URI: postgresql+psycopg://honcho:${HONCHO_DB_PASSWORD:-honcho-local-pass}@127.0.0.1:5432/honcho
+      DB_CONNECTION_URI: postgresql+psycopg://honcho:${HONCHO_DB_PASSWORD:-REPLACE_WITH_SECURE_PASSWORD}@127.0.0.1:5432/honcho
       REDIS_URL: redis://127.0.0.1:6379/0
       AUTH_USE_AUTH: false
     volumes:
