@@ -24,8 +24,8 @@ Default server address is `REPLACE_WITH_YOUR_MESH_VPN_IP` (Mesh-VPN). Change `.e
 ## 1-Click Setup (server)
 
 ```bash
-git clone https://github.com/<your-org>/free-auto-project.git
-cd free-auto-project
+git clone https://github.com/<your-org>/J1-Stack-Deploy.git
+cd J1-Stack-Deploy
 cp .env.example .env
 docker compose up -d
 ./scripts/init-honcho.sh
