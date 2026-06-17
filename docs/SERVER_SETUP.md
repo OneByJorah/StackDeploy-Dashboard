@@ -9,8 +9,8 @@
 ## Install
 
 ```bash
-git clone https://github.com/<your-org>/free-auto-project.git
-cd free-auto-project
+git clone https://github.com/<your-org>/StackDeploy.git
+cd StackDeploy
 cp .env.example .env
 # Edit .env: set SERVER_IP, MODEL_PATH, HONCHO_DB_PASSWORD, HONCHO_TOKEN
 docker compose up -d
