@@ -68,6 +68,9 @@ Flow:
 - **Browser control**: Chrome CDP integration.
 - **Observability**: metrics and health-check scripts included.
 - **One-command bootstrap**: compose + init + bootstrap + healthcheck.
+- **GPU-accelerated inference**: llama.cpp with flash-attn and `N_GPU_LAYERS=99` requires an NVIDIA GPU with the NVIDIA Container Toolkit installed on the host.
+
+> ⚠️ **Hardware requirement**: the default `llama-server` service needs NVIDIA GPU access. CPU-only hosts cannot run the full stack.
 
 ---
 
