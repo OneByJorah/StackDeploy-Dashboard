@@ -4,7 +4,6 @@
 
 - Docker + Docker Compose v2+
 - Mesh-VPN installed
-- (Optional) NVIDIA GPU + NVIDIA Container Toolkit if you want GPU-accelerated Ollama
 
 ## Install
 
@@ -15,7 +14,6 @@ cp .env.example .env
 # Edit .env: set SERVER_IP, HONCHO_DB_PASSWORD, HONCHO_TOKEN
 docker compose up -d
 ./scripts/init-honcho.sh
-./scripts/init-ollama.sh
 ./scripts/healthcheck.sh <server-ip>
 ```
 
@@ -25,7 +23,6 @@ All services should return `200`.
 
 | Service | Port | Notes |
 |---|---|---|
-| Ollama | `11434` | Local LLM inference |
 | SearXNG | `8080` | Self-hosted web search |
 | Honcho API | `8081` | Long-term memory |
 | Chrome CDP | `9222` | Browser automation |
@@ -33,5 +30,5 @@ All services should return `200`.
 
 ## Notes
 
-- Default model is `qwen2.5:4b`, sized for CPU-only hosts with ~8 GB RAM. Edit `OLLAMA_MODEL` and `OLLAMA_NUM_CPU` in `.env` to match your hardware.
-- If you have an NVIDIA GPU, add GPU device reservations to the `ollama` service and set `OLLAMA_NUM_CPU` low.
+- LLM inference is NOT included in this stack by design. Use Hermes pluggable providers for free cloud models, or enable the local LLM add-on blocks in `docker-compose.yml` if you want self-hosted inference later.
+- Enabling Ollama requires adding its variables to `.env` and uncommenting the block in `docker-compose.yml`. Enabling llama.cpp requires an NVIDIA GPU and a mounted GGUF model.
