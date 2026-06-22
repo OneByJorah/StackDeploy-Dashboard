@@ -1,30 +1,22 @@
 services:
-  llama-server:
-    image: ghcr.io/ggerganov/llama.cpp:full
-    container_name: llama-server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
     ports:
-      - "8082:8082"
+      - "11434:11434"
     volumes:
-      - ${MODEL_PATH:-/models/Qwen3.5-9B-Coder-Q4_K_M.gguf}:/models/model.gguf:ro
+      - ollama-models:/root/.ollama
     environment:
-      LLAMA_ARG_MODEL: /models/model.gguf
-      LLAMA_ARG_CTX_SIZE: ${CTX_SIZE:-65536}
-      LLAMA_ARG_N_GPU_LAYERS: 99
-      LLAMA_ARG_N_THREADS: 8
-      LLAMA_ARG_PARALLEL: 4
-      LLAMA_ARG_BATCH: 2048
-      LLAMA_ARG_UBATCH: 512
-      LLAMA_ARG_FLASH_ATTN: on
-      LLAMA_ARG_CONT_BATCHING: 1
-      LLAMA_ARG_METRICS: 1
-      LLAMA_ARG_NO_UI: 1
-      LLAMA_ARG_REASONING: off
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
+      OLLAMA_NUM_CPU: 4
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_NUM_PARALLEL: 2
+      OLLAMA_FLASH_ATTENTION: "0"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
   searxng:
@@ -34,6 +26,12 @@ services:
       - "8080:8080"
     volumes:
       - searxng-data:/etc/searxng
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
 
   honcho-db:
@@ -45,26 +43,45 @@ services:
       POSTGRES_DB: honcho
     volumes:
       - honcho-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U honcho -d honcho"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
   honcho-redis:
     image: redis:8.2
     container_name: honcho-redis
-    command: ["redis-server", "--bind", "127.0.0.1"]
+    command: ["redis-server", "--bind", "0.0.0.0"]
     volumes:
       - honcho-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
   honcho:
     image: honcho-repo-api:latest
     container_name: honcho
-    network_mode: host
+    ports:
+      - "8081:8081"
     environment:
-      DB_CONNECTION_URI: postgresql+psycopg://honcho:${HONCHO_DB_PASSWORD:-REPLACE_WITH_SECURE_PASSWORD}@127.0.0.1:5432/honcho
-      REDIS_URL: redis://127.0.0.1:6379/0
+      DB_CONNECTION_URI: postgresql+psycopg://honcho:${HONCHO_DB_PASSWORD:-REPLACE_WITH_SECURE_PASSWORD}@honcho-db:5432/honcho
+      REDIS_URL: redis://honcho-redis:6379/0
       AUTH_USE_AUTH: false
+      HONCHO_TOKEN: ${HONCHO_TOKEN:-}
     volumes:
       - honcho-data:/app/data
+    depends_on:
+      honcho-db:
+        condition: service_healthy
+      honcho-redis:
+        condition: service_healthy
     restart: unless-stopped
 
   chrome:
@@ -73,6 +90,12 @@ services:
     shm_size: 2g
     ports:
       - "9222:9222"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9222/json/version || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
 
   qdrant:
@@ -82,6 +105,12 @@ services:
       - "6333:6333"
     volumes:
       - qdrant-data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
@@ -89,4 +118,5 @@ volumes:
   honcho-postgres:
   honcho-redis:
   honcho-data:
+  ollama-models:
   qdrant-data:

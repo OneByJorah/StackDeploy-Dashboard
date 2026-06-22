@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
-mkdir -p /home/<user>/docker/j1-stack-deploy
-cat > /home/<user>/docker/j1-stack-deploy/.env <<EOF
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cat > "$REPO_ROOT/.env" <<EOF
 SERVER_IP=REPLACE_WITH_YOUR_MESH_VPN_IP
+
+# Ollama
+OLLAMA_NUM_CPU=4
+OLLAMA_MAX_LOADED_MODELS=1
+OLLAMA_NUM_PARALLEL=2
+OLLAMA_MODEL=qwen2.5:4b
+
+# Honcho
 HONCHO_TOKEN=<REPLACE_WITH_YOUR_HONCHO_TOKEN>
 HONCHO_DB_PASSWORD=REPLACE_WITH_SECURE_PASSWORD
 EOF
-echo "init-honcho: wrote /home/<user>/docker/j1-stack-deploy/.env"
+echo "init-honcho: wrote $REPO_ROOT/.env"

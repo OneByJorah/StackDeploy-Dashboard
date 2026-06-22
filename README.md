@@ -1,76 +1,58 @@
 # StackDeploy — Self-hosted AI Stack for Hermes Agents
 
-**Version:** v1.0  
+**Version:** v1.1  
 **Status:** Active Development  
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Technology Stack](#technology-stack)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Service Management](#service-management)
-- [Project Structure](#project-structure)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
-- [Author](#author)
-
----
-
 ## Overview
 
-StackDeploy is a one-command self-hosted AI stack for Hermes Agents. It brings together llama.cpp for local LLM inference, SearXNG for privacy-respecting search, Honcho memory for long-term context, Chrome CDP for browser automation, vector memory for semantic retrieval, TTS for speech synthesis, and observability tooling in a single Docker Compose deployment.
+StackDeploy is a one-command self-hosted stack for Hermes Agents. It brings together **Ollama** for local LLM inference, **SearXNG** for privacy-respecting search, **Honcho memory** for long-term context, **Chrome CDP** for browser automation, **Qdrant** for vector search, and **PostgreSQL + pgvector + Redis** for structured memory — in a single Docker Compose deployment.
 
-Designed for operators who want full control: run the stack on your own hardware, keep data on-prem, and wire it into Hermes via environment configuration.
+Designed for operators who want full control: run the stack on your own hardware, keep data on-prem, and wire it into Hermes via environment configuration. No paid APIs required.
 
 ---
 
 ## Architecture
 
-Client → Nginx / Docker compose → Services (llama.cpp, SearXNG, Honcho, Redis, Postgres/pgvector) → Hermes Agent integration.
-
-Flow:
-- SearXNG provides web search.
-- llama.cpp serves a local quantized model.
-- Honcho + Redis + pgvector hold memory/context.
-- Chrome CDP exposes browser automation.
-- Observability exports metrics/logs.
+```
+Client → Hermes Agent → StackDeploy services
+  ├── Ollama (local LLM inference)
+  ├── SearXNG (web search)
+  ├── Honcho API (long-term memory)
+  ├── Chrome CDP (browser automation)
+  └── Qdrant (vector storage)
+```
 
 ---
 
 ## Technology Stack
 
-|| Layer | Stack |
-|---|---|
+| Layer | Stack |
+|-------|-------|
 | Runtime | Linux (Ubuntu 22.04+) |
 | Orchestration | Docker Compose |
-| LLM Runtime | llama.cpp (Q4 quant, flash-attn) |
+| LLM Runtime | Ollama (CPU-only or GPU) |
 | Search | SearXNG |
 | Memory | Honcho API + Redis + pgvector |
-| Database | PostgreSQL 15 + pgvector |
+| Vector DB | Qdrant |
 | Browser Automation | Chrome CDP |
 | Scripts | Bash / curl |
-| VCS | Git + GitHub (`github.com/OneByJorah/StackDeploy`) |
+| VCS | Git + GitHub |
 
 ---
 
 ## Features
 
-- **Local LLM**: llama.cpp with configurable model path, context size, threading, and batching.
+- **Local LLM**: Ollama with configurable model, CPU thread tuning, and parallel limits.
 - **Privacy search**: self-hosted SearXNG instance.
 - **Long-term memory**: Honcho memory API backed by Postgres/pgvector and Redis.
+- **Vector search**: Qdrant for semantic retrieval.
 - **Browser control**: Chrome CDP integration.
-- **Observability**: metrics and health-check scripts included.
+- **Observability**: health-check scripts for every service.
 - **One-command bootstrap**: compose + init + bootstrap + healthcheck.
-- **GPU-accelerated inference**: llama.cpp with flash-attn and `N_GPU_LAYERS=99` requires an NVIDIA GPU with the NVIDIA Container Toolkit installed on the host.
-
-> ⚠️ **Hardware requirement**: the default `llama-server` service needs NVIDIA GPU access. CPU-only hosts cannot run the full stack.
+- **CPU-friendly**: tuned for hosts without GPUs. Adjust `OLLAMA_NUM_CPU` to match cores.
 
 ---
 
@@ -83,14 +65,14 @@ cd StackDeploy
 
 # 2. Environment
 cp .env.example .env
-# Edit .env: set model path, passwords, and ports.
+# Edit .env: set SERVER_IP and HONCHO_DB_PASSWORD
 
 # 3. Bring up the stack
 docker compose up -d
 
 # 4. Initialize services
 ./scripts/init-honcho.sh
-./scripts/bootstrap.sh
+./scripts/init-ollama.sh
 
 # 5. Verify
 ./scripts/healthcheck.sh
@@ -104,10 +86,12 @@ Key variables from `.env.example`:
 
 | Variable | Purpose |
 |---|---|
-| `MODEL_PATH` | Path to GGUF model inside the host or mounted volume |
-| `CTX_SIZE` | Context window size for llama.cpp |
+| `SERVER_IP` | Mesh-VPN IP of this server (used by healthcheck if no arg passed) |
+| `OLLAMA_NUM_CPU` | CPU threads for Ollama (default: 4) |
+| `OLLAMA_MAX_LOADED_MODELS` | Max models in memory (default: 1) |
+| `OLLAMA_MODEL` | Model to pull on init (default: `qwen2.5:4b`) |
 | `HONCHO_DB_PASSWORD` | Postgres password for Honcho |
-| Ports | `8080` (SearXNG), `8082` (llama.cpp), and others |
+| `HONCHO_TOKEN` | Auth token for Honcho API |
 
 Keep `.env` out of VCS.
 
@@ -126,7 +110,7 @@ docker compose down
 docker compose logs -f
 
 # Healthcheck
-./scripts/healthcheck.sh
+./scripts/healthcheck.sh <your-server-ip>
 ```
 
 Services expose ports on the host; bind only to trusted interfaces in production.
@@ -142,29 +126,49 @@ StackDeploy/
 ├── scripts/
 │   ├── bootstrap.sh
 │   ├── healthcheck.sh
-│   └── init-honcho.sh
+│   ├── init-honcho.sh
+│   └── init-ollama.sh
 ├── docs/
 │   ├── SERVER_SETUP.md
-│   ├── HERMES_SETUP.md
-│   └── MAINTENANCE.md
+│   └── HERMES_SETUP.md
 └── README.md
 ```
 
 ---
 
-## Screenshots
+## Hermes Configuration
 
-All screenshots are live captures from the local deployment.
+After the stack is up, point Hermes at your local services:
 
-_(Screenshots will be added after build/run capture.)_
+```yaml
+model:
+  base_url: http://<SERVER_IP>:11434/v1
+  default: qwen2.5:4b
+  provider: custom
+  api_key: hermes-local
+
+web:
+  backend: searxng
+  searxng_url: http://<SERVER_IP>:8080
+
+browser:
+  cdp_url: http://<SERVER_IP>:9222
+
+honcho:
+  enabled: true
+  base_url: "http://<SERVER_IP>:8081"
+  workspace: hermes-main
+```
+
+For Obsidian note-taking, set the vault path in Hermes to your local Obsidian directory. No separate service is required — Hermes reads/writes markdown directly.
 
 ---
 
-## Contributing
+## Notes
 
-1. Create a feature branch off `main`.
-2. Test changes with `docker compose up -d` and `./scripts/healthcheck.sh`.
-3. Submit a PR with description and screenshots for service/UI changes.
+- Default model (`qwen2.5:4b`) is sized for CPU-only hosts with ~8 GB RAM. Increase `OLLAMA_NUM_CPU` if you have more cores.
+- If you have an NVIDIA GPU, you can switch to the `ollama/ollama:latest` GPU-enabled image and set `OLLAMA_NUM_CPU` lower. GPU passthrough is not included in the default compose.
+- SearXNG is fully self-hosted — no external API keys or rate limits.
 
 ---
 
