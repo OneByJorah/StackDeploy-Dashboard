@@ -1,111 +1,140 @@
-# StackDeploy — Self-hosted Services for Hermes Agents
+# StackDeploy (StackDeploy)
 
-![Status](https://img.shields.io/badge/status-active-success)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
+**Version:** v1.3  
+**Status:** Production Ready  
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
 ---
 
-## What is this?
+## Table of Contents
 
-StackDeploy is a one command, self-hosted stack of **Hermes-compatible services** for your AI agent. Run SearXNG search, Honcho memory, Chrome browser automation, Qdrant vector search, and Obsidian note-taking on your own hardware. No local GPU is required.
-
-LLM inference is intentionally left out. Use a free cloud API (OpenRouter, Nous Portal, HuggingFace Inference, etc.) so you don't pay for models you already have access to.
-
----
-
-## Services included
-
-| Service | Port | Self-hosted | Purpose |
-|---|---|---|---|
-| SearXNG | `8080` | Yes | Privacy-respecting web search |
-| Honcho API | `8081` | Yes | Long-term memory |
-| Chrome CDP | `9222` | Yes | Browser automation |
-| Qdrant | `6333` | Yes | Vector storage |
-| Obsidian | `8083` | Yes | Markdown note vault |
-| PostgreSQL + pgvector + Redis | internal | Yes | Memory backend |
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Service Management](#service-management)
+- [CI/CD & Deployment](#cicd--deployment)
+- [Security](#security)
+- [Project Structure](#project-structure)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ---
 
-## Getting started
+## Overview
 
-One command after config:
-```bash
-bash scripts/bootstrap.sh
-```
+StackDeploy is a Docker Compose-based self-hosted stack for Hermes Agents. It consolidates local web search, long-term memory, browser automation, vector storage, and Obsidian note-taking into a reproducible, one-command deployment. The stack is designed to run on CPU-only hosts with no local GPU, while keeping the LLM layer intentionally external so you can plug in free cloud providers.
 
-Manual:
+Secrets and environment configuration are managed via `docker-compose.yml` and `.env`, never committed to version control.
+
+---
+
+## Architecture
+
+Client → Hermes Agent → Local services (SearXNG, Honcho, Chrome, Qdrant, Obsidian, PostgreSQL + Redis) → optional upstream LLM provider via Hermes config.
+
+---
+
+## Technology Stack
+
+| Layer | Stack |
+|---|---|
+| Runtime | Linux (Ubuntu 22.04+) |
+| Primary Stack | Docker Compose / Bash |
+| VCS | Git + GitHub (`github.com/OneByJorah/StackDeploy`) |
+| Memory / Context | Honcho |
+| Notifications | Telegram (J1-bot) |
+| Release path | `git push origin main` (documentation/build on branch) |
+
+---
+
+## Features
+
+- **SearXNG**: privacy-respecting self-hosted web search.
+- **Honcho API**: long-term memory and workspace context for Hermes.
+- **Chrome CDP**: browser automation via remote DevTools.
+- **Qdrant**: vector storage for semantic retrieval.
+- **Obsidian vault**: markdown-backed note-taking exposed via web UI.
+- **PostgreSQL + pgvector + Redis**: durable memory backend with vector support.
+- **One-command bootstrap**: clone, env, stack, init, healthcheck.
+- **Extensible service-based design**: add modules via Compose blocks.
+- **CPU-first design**: no local GPU required for base stack.
+
+---
+
+## Getting Started
+
 ```bash
+# 1. Clone the repository
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
+
+# 2. Environment
 cp .env.example .env
+# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
+
+# 3. Start the stack
 docker compose up -d
 ./scripts/init-honcho.sh
 ./scripts/init-obsidian.sh
-./scripts/healthcheck.sh <SERVER_IP>
 ```
 
 ---
 
-## Hermes auto-wiring
+## Environment Variables
 
-After bootstrap, add this to `~/.hermes/config.yaml`:
-
-```yaml
-model:
-  base_url: https://openrouter.ai/api/v1
-  default: <free-model-id>
-  provider: openrouter
-  api_key: <OPENROUTER_API_KEY>
-
-web:
-  backend: searxng
-  searxng_url: http://<SERVER_IP>:8080
-
-browser:
-  cdp_url: http://<SERVER_IP>:9222
-
-honcho:
-  enabled: true
-  base_url: "http://<SERVER_IP>:8081"
-  workspace: hermes-main
-
-obsidian:
-  enabled: true
-  vault_path: /home/<user>/ObsidianVault
-```
-
-Run `hermes restart` to apply.
-
----
-
-## Environment variables
-
-| Variable | Example | Notes |
+| Variable | Purpose | Notes |
 |---|---|---|
-| `SERVER_IP` | `100.x.y.z` | Mesh-VPN or LAN IP |
-| `APPLICATION_TOKEN` | `abc123` | Honcho access token |
-| `DB_ACCOUNT_PASSWORD` | `s3cure!` | Postgres password |
-| `POSTGRES_PASSWORD` | `s3cure!` | Postgres password (repeat) |
-| `OBSIDIAN_VAULT_PATH` | `/home/<user>/ObsidianVault` | Host path for Obsidian |
+| `SERVER_IP` | Mesh-VPN or local IP used in docs/examples | Required |
+| `HONCHO_TOKEN` | Auth token for Honcho API | Optional |
+| `HONCHO_DB_PASSWORD` | Postgres password for Honcho backend | Required |
+| `OBSIDIAN_VAULT_PATH` | Host path for the Obsidian vault | Optional |
 
-Keep `.env` out of version control.
-
----
-
-## Optional: local LLM add-ons
-
-Uncomment ONE block below in `docker-compose.yml` and add vars to `.env` if you want self-hosted inference later:
-
-- **Ollama** — CPU-friendly
-- **llama.cpp** — GPU-accelerated
+Keep `.env` out of VCS. Prefer `.env.example` placeholders in docs.
 
 ---
 
-## Project structure
+## Service Management
 
+```bash
+# Start the stack
+docker compose up -d
+
+# Stop
+docker compose down
+
+# Tail logs
+docker compose logs -f
+
+# Healthcheck
+./scripts/healthcheck.sh <server-ip>
 ```
+
+---
+
+## CI/CD & Deployment
+
+- Branch model: `main` for stable, feature branches for work-in-progress.
+- Use `git push origin <branch>` to publish changes and trigger downstream automation.
+- Keep Cheatsheet/docs in sync before merging: docs, README, and any changed service ports/endpoints.
+
+---
+
+## Security
+
+- Secrets are handled through `.env` files with restrictive permissions; never store raw API tokens in README or source.
+- Frontend artifacts and dashboard access paths are not credential-based in this repository.
+- Services expose ports on localhost / trusted interfaces by default; bind only to trusted networks in production.
+
+---
+
+## Project Structure
+
+```text
 StackDeploy/
 ├── docker-compose.yml
 ├── .env.example
@@ -123,14 +152,20 @@ StackDeploy/
 
 ---
 
-## Service management
+## Screenshots
 
-```bash
-docker compose up -d
-docker compose down
-docker compose logs -f
-./scripts/healthcheck.sh <SERVER_IP>
-```
+All screenshots are live captures from the local dev instance.
+
+_(Screenshots will be added after build/run capture.)_
+
+---
+
+## Contributing
+
+1. Create a feature branch off `main`.
+2. Follow the existing code style and README section order.
+3. Submit a PR with description and screenshots for UI changes.
+4. Do not commit real secrets or `.env` files.
 
 ---
 

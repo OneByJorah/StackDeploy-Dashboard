@@ -8,17 +8,37 @@
 ## Install
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
+
+# 2. Environment
 cp .env.example .env
-# Edit .env: set SERVER_IP, APPLICATION_TOKEN, DB_ACCOUNT_PASSWORD, POSTGRES_PASSWORD
+# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
+
+# 3. Bring up the stack
 docker compose up -d
+
+# 4. Initialize services
 ./scripts/init-honcho.sh
 ./scripts/init-obsidian.sh
-./scripts/healthcheck.sh <server-ip>
 ```
 
-All services should return `200`.
+---
+
+## Environment Variables
+
+| Variable | Purpose | Notes |
+|---|---|---|
+| `SERVER_IP` | Mesh-VPN or local IP used in docs/examples | Required |
+| `HONCHO_TOKEN` | Auth token for Honcho API | Optional |
+| `HONCHO_DB_PASSWORD` | Postgres password for Honcho backend | Required |
+| `POSTGRES_PASSWORD` | Postgres password | Required |
+| `OBSIDIAN_VAULT_PATH` | Host path for the Obsidian vault | Optional |
+
+Keep `.env` out of VCS. Prefer `.env.example` placeholders in docs.
+
+---
 
 ## Services
 
@@ -30,8 +50,47 @@ All services should return `200`.
 | Qdrant | `6333` |
 | Obsidian Web | `8083` |
 
-## Notes
+---
 
-- LLM inference is NOT included by default. Use Hermes pluggable providers for free cloud models.
-- To enable a local LLM later, uncomment the matching block in `docker-compose.yml` and add vars to `.env`.
-- Obsidian vault data persists in the `obsidian-vault` Docker volume. Back it up regularly.
+## Service Management
+
+```bash
+# Start the stack
+docker compose up -d
+
+# Stop
+docker compose down
+
+# Tail logs
+docker compose logs -f
+
+# Healthcheck
+./scripts/healthcheck.sh <server-ip>
+```
+
+---
+
+## Security
+
+- Bind services to trusted interfaces in production.
+- Obsidian vault data persists in the `obsidian-vault` Docker volume; back it up regularly.
+- All secrets remain in `.env`, excluded from VCS.
+
+---
+
+## Troubleshooting
+
+- If services fail to start, inspect `docker compose up -d && docker compose logs -f`.
+- Ensure `SERVER_IP` matches the host address used by other clients (Mesh-VPN recommended).
+
+---
+
+## License
+
+MIT
+
+---
+
+## Author
+
+Built by **Jhonattan L. Jimenez**.

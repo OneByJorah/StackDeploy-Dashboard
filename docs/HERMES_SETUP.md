@@ -3,12 +3,20 @@
 ## Quick start
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
+
+# 2. Environment
 cp .env.example .env
+# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
+
+# 3. Start the stack
 bash scripts/bootstrap.sh
 hermes restart
 ```
+
+---
 
 ## Hermes config
 
@@ -39,3 +47,15 @@ obsidian:
 ```
 
 For local Obsidian, open the vault folder in the desktop app. Hermes reads and writes notes directly through the Obsidian skill.
+
+---
+
+## License
+
+MIT
+
+---
+
+## Author
+
+Built by **Jhonattan L. Jimenez**.
