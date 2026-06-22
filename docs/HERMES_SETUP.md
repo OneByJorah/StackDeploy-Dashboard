@@ -1,40 +1,61 @@
 # Hermes Setup
 
-Connect any Hermes client to the Free Auto Project stack.
-
-## One-command bootstrap
+## Quick start
 
 ```bash
-bash <(curl -s http://REPLACE_WITH_YOUR_MESH_VPN_IP:8501/bootstrap.sh)
+# 1. Clone the repository
+git clone https://github.com/OneByJorah/StackDeploy.git
+cd StackDeploy
+
+# 2. Environment
+cp .env.example .env
+# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
+
+# 3. Start the stack
+bash scripts/bootstrap.sh
 hermes restart
 ```
 
-## What it configures
+---
 
-- **LLM**: `http://<server>:8082/v1`
-- **Search**: `http://<server>:8080`
-- **Browser**: `http://<server>:9222`
-- **Honcho memory**: `http://<server>:8081`
+## Hermes config
 
-## Manual config
-
-If you prefer to edit `~/.hermes/config.yaml` directly:
+Point Hermes at the free cloud provider of your choice, plus the local services above:
 
 ```yaml
 model:
-  base_url: http://REPLACE_WITH_YOUR_MESH_VPN_IP:8082/v1
-  default: Qwen3.5-9B-Coder-Q4_K_M.gguf
-  provider: custom
-  api_key: hermes-local
+  base_url: https://openrouter.ai/api/v1
+  default: <provider-model-id>
+  provider: openrouter
+  api_key: <OPENROUTER_API_KEY>
 
 web:
-  searxng_url: http://REPLACE_WITH_YOUR_MESH_VPN_IP:8080
+  backend: searxng
+  searxng_url: http://<SERVER_IP>:8080
 
 browser:
-  cdp_url: http://REPLACE_WITH_YOUR_MESH_VPN_IP:9222
+  cdp_url: http://<SERVER_IP>:9222
 
 honcho:
   enabled: true
-  base_url: "http://REPLACE_WITH_YOUR_MESH_VPN_IP:8081"
+  base_url: "http://<SERVER_IP>:8081"
   workspace: hermes-main
+
+obsidian:
+  enabled: true
+  vault_path: /home/<user>/ObsidianVault
 ```
+
+For local Obsidian, open the vault folder in the desktop app. Hermes reads and writes notes directly through the Obsidian skill.
+
+---
+
+## License
+
+MIT
+
+---
+
+## Author
+
+Built by **Jhonattan L. Jimenez**.
