@@ -1,18 +1,18 @@
 # Hermes Setup
 
-Connect any Hermes client to the StackDeploy stack.
+## Quick start
 
-## What it configures
+```bash
+git clone https://github.com/OneByJorah/StackDeploy.git
+cd StackDeploy
+cp .env.example .env
+bash scripts/bootstrap.sh
+hermes restart
+```
 
-- **LLM**: your free cloud provider (set in Hermes `.env` / `config.yaml`)
-- **Search**: `http://<server>:8080` (SearXNG)
-- **Browser**: `http://<server>:9222` (Chrome CDP)
-- **Honcho memory**: `http://<server>:8081`
-- **Obsidian**: vault path `/home/<user>/ObsidianVault` (or your chosen path)
+## Hermes config
 
-## Manual config
-
-If you prefer to edit `~/.hermes/config.yaml` directly:
+Point Hermes at the free cloud provider of your choice, plus the local services above:
 
 ```yaml
 model:
@@ -38,4 +38,4 @@ obsidian:
   vault_path: /home/<user>/ObsidianVault
 ```
 
-For Obsidian, install the desktop app locally and open the vault folder. Hermes will read and write notes directly through the Obsidian skill.
+For local Obsidian, open the vault folder in the desktop app. Hermes reads and writes notes directly through the Obsidian skill.

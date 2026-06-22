@@ -1,152 +1,61 @@
 # StackDeploy — Self-hosted Services for Hermes Agents
 
-**Version:** v1.3  
-**Status:** Active Development  
+![Status](https://img.shields.io/badge/status-active-success)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
 ---
 
-## Overview
+## What is this?
 
-StackDeploy is a one-command self-hosted stack of **Hermes-compatible services**. Use it to run local web search, long-term memory, browser automation, vector storage, and Obsidian note-taking for your Hermes Agent. **LLM inference is intentionally left out** so you can plug in a free cloud API directly, or optionally enable local inference add-ons later.
+StackDeploy is a one command, self-hosted stack of **Hermes-compatible services** for your AI agent. Run SearXNG search, Honcho memory, Chrome browser automation, Qdrant vector search, and Obsidian note-taking on your own hardware. No local GPU is required.
 
-Designed for operators who want full control: run the services you need on your own hardware, keep data on-prem, and wire them into Hermes via environment configuration.
-
----
-
-## Services Included
-
-| Service | Purpose | Hermes Integration |
-|---------|---------|--------------------|
-| **SearXNG** | Self-hosted web search | `web.searxng_url` |
-| **Honcho** | Long-term memory API | `honcho.base_url` |
-| **Chrome CDP** | Browser automation | `browser.cdp_url` |
-| **Qdrant** | Vector search | optional semantic retrieval |
-| **Obsidian vault** | Markdown notes | Obsidian skill + local app |
-| **PostgreSQL + pgvector + Redis** | Memory/context backend | used by Honcho |
+LLM inference is intentionally left out. Use a free cloud API (OpenRouter, Nous Portal, HuggingFace Inference, etc.) so you don't pay for models you already have access to.
 
 ---
 
-## LLM Strategy: Free Cloud First
+## Services included
 
-StackDeploy does not ship a local LLM runtime by default. Configure Hermes to use a free cloud LLM directly — for example OpenRouter free models, Nous Portal, HuggingFace Inference, or any OpenAI-compatible API.
-
-**Where to configure this:**
-- Hermes config: `~/.hermes/config.yaml` or `~/.hermes/.env`
-- Set `model.base_url`, `model.default`, and provider credentials there.
-
-See `docs/HERMES_SETUP.md` for concrete examples.
-
----
-
-## Optional: Local LLM Add-Ons
-
-If you later want a local fallback/always-on model, you can add one of the pre-written blocks in `docker-compose.yml`:
-
-- **Option A — Ollama:** CPU-friendly local inference. Good for 8 GB RAM hosts.
-- **Option B — llama.cpp:** GPU-accelerated local inference. Requires NVIDIA GPU.
-
-To enable: edit `docker-compose.yml`, uncomment the desired block, add the matching vars to `.env`, then re-run `docker compose up -d`.
+| Service | Port | Self-hosted | Purpose |
+|---|---|---|---|
+| SearXNG | `8080` | Yes | Privacy-respecting web search |
+| Honcho API | `8081` | Yes | Long-term memory |
+| Chrome CDP | `9222` | Yes | Browser automation |
+| Qdrant | `6333` | Yes | Vector storage |
+| Obsidian | `8083` | Yes | Markdown note vault |
+| PostgreSQL + pgvector + Redis | internal | Yes | Memory backend |
 
 ---
 
-## Optional: Obsidian Web UI
+## Getting started
 
-An Obsidian web client is available as an optional service in `docker-compose.yml`. Uncomment the `obsidian:` service to expose your vault through a browser on port `8083`.
-
----
-
-## Getting Started
-
+One command after config:
 ```bash
-# 1. Clone
+bash scripts/bootstrap.sh
+```
+
+Manual:
+```bash
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
-
-# 2. Environment
 cp .env.example .env
-# Edit .env: set SERVER_IP, HONCHO_DB_PASSWORD
-# Optional: set OBSIDIAN_VAULT_PATH (default: /home/<user>/ObsidianVault)
-
-# 3. Bring up the stack
 docker compose up -d
-
-# 4. Initialize services
 ./scripts/init-honcho.sh
 ./scripts/init-obsidian.sh
-
-# 5. Verify
-./scripts/healthcheck.sh <server-ip>
+./scripts/healthcheck.sh <SERVER_IP>
 ```
 
 ---
 
-## Environment Variables
+## Hermes auto-wiring
 
-Key variables from `.env.example`:
-
-| Variable | Purpose |
-|---|---|
-| `SERVER_IP` | Mesh-VPN or local IP used in docs/examples |
-| `HONCHO_DB_PASSWORD` | Postgres password for Honcho |
-| `HONCHO_TOKEN` | Auth token for Honcho API |
-| `OBSIDIAN_VAULT_PATH` | Host path for your Obsidian vault |
-| `OLLAMA_MODEL` | *(optional)* Model tag if you enable Ollama |
-| `MODEL_PATH` | *(optional)* GGUF path if you enable llama.cpp |
-| `CTX_SIZE` | *(optional)* Context window size for llama.cpp |
-
-Keep `.env` out of VCS.
-
----
-
-## Service Management
-
-```bash
-# Start
-docker compose up -d
-
-# Stop
-docker compose down
-
-# Logs
-docker compose logs -f
-
-# Healthcheck
-./scripts/healthcheck.sh <server-ip>
-```
-
-Services expose ports on the host; bind only to trusted interfaces in production.
-
----
-
-## Project Structure
-
-```
-StackDeploy/
-├── docker-compose.yml
-├── .env.example
-├── scripts/
-│   ├── bootstrap.sh
-│   ├── healthcheck.sh
-│   ├── init-honcho.sh
-│   └── init-obsidian.sh
-├── docs/
-│   ├── SERVER_SETUP.md
-│   └── HERMES_SETUP.md
-└── README.md
-```
-
----
-
-## Hermes Configuration
-
-After the stack is up, point Hermes at your services, LLM provider, and Obsidian vault:
+After bootstrap, add this to `~/.hermes/config.yaml`:
 
 ```yaml
 model:
-  # Use your free cloud provider here
   base_url: https://openrouter.ai/api/v1
-  default: <provider-model-id>
+  default: <free-model-id>
   provider: openrouter
   api_key: <OPENROUTER_API_KEY>
 
@@ -167,7 +76,61 @@ obsidian:
   vault_path: /home/<user>/ObsidianVault
 ```
 
-For local Obsidian usage, open the vault folder `/home/<user>/ObsidianVault` in your Obsidian desktop app. No separate service is required — Hermes reads and writes markdown notes directly via the Obsidian skill.
+Run `hermes restart` to apply.
+
+---
+
+## Environment variables
+
+| Variable | Example | Notes |
+|---|---|---|
+| `SERVER_IP` | `100.x.y.z` | Mesh-VPN or LAN IP |
+| `APPLICATION_TOKEN` | `abc123` | Honcho access token |
+| `DB_ACCOUNT_PASSWORD` | `s3cure!` | Postgres password |
+| `POSTGRES_PASSWORD` | `s3cure!` | Postgres password (repeat) |
+| `OBSIDIAN_VAULT_PATH` | `/home/<user>/ObsidianVault` | Host path for Obsidian |
+
+Keep `.env` out of version control.
+
+---
+
+## Optional: local LLM add-ons
+
+Uncomment ONE block below in `docker-compose.yml` and add vars to `.env` if you want self-hosted inference later:
+
+- **Ollama** — CPU-friendly
+- **llama.cpp** — GPU-accelerated
+
+---
+
+## Project structure
+
+```
+StackDeploy/
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── scripts/
+│   ├── bootstrap.sh
+│   ├── healthcheck.sh
+│   ├── init-honcho.sh
+│   └── init-obsidian.sh
+├── docs/
+│   ├── SERVER_SETUP.md
+│   └── HERMES_SETUP.md
+└── README.md
+```
+
+---
+
+## Service management
+
+```bash
+docker compose up -d
+docker compose down
+docker compose logs -f
+./scripts/healthcheck.sh <SERVER_IP>
+```
 
 ---
 
