@@ -1,6 +1,6 @@
 # StackDeploy — Self-hosted Services for Hermes Agents
 
-**Version:** v1.2  
+**Version:** v1.3  
 **Status:** Active Development  
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-StackDeploy is a one-command self-hosted stack of **Hermes-compatible services**. Use it to run local web search, long-term memory, browser automation, and vector storage for your Hermes Agent. **LLM inference is intentionally left out** so you can plug in a free cloud API directly, or optionally enable the local inference add-on later if you change your mind.
+StackDeploy is a one-command self-hosted stack of **Hermes-compatible services**. Use it to run local web search, long-term memory, browser automation, vector storage, and Obsidian note-taking for your Hermes Agent. **LLM inference is intentionally left out** so you can plug in a free cloud API directly, or optionally enable local inference add-ons later.
 
 Designed for operators who want full control: run the services you need on your own hardware, keep data on-prem, and wire them into Hermes via environment configuration.
 
@@ -22,13 +22,14 @@ Designed for operators who want full control: run the services you need on your 
 | **Honcho** | Long-term memory API | `honcho.base_url` |
 | **Chrome CDP** | Browser automation | `browser.cdp_url` |
 | **Qdrant** | Vector search | optional semantic retrieval |
+| **Obsidian vault** | Markdown notes | Obsidian skill + local app |
 | **PostgreSQL + pgvector + Redis** | Memory/context backend | used by Honcho |
 
 ---
 
 ## LLM Strategy: Free Cloud First
 
-StackDeploy does not ship a local LLM runtime. Configure Hermes to use a free cloud LLM directly — for example OpenRouter free models, Nous Portal, HuggingFace Inference, or any OpenAI-compatible API.
+StackDeploy does not ship a local LLM runtime by default. Configure Hermes to use a free cloud LLM directly — for example OpenRouter free models, Nous Portal, HuggingFace Inference, or any OpenAI-compatible API.
 
 **Where to configure this:**
 - Hermes config: `~/.hermes/config.yaml` or `~/.hermes/.env`
@@ -49,6 +50,12 @@ To enable: edit `docker-compose.yml`, uncomment the desired block, add the match
 
 ---
 
+## Optional: Obsidian Web UI
+
+An Obsidian web client is available as an optional service in `docker-compose.yml`. Uncomment the `obsidian:` service to expose your vault through a browser on port `8083`.
+
+---
+
 ## Getting Started
 
 ```bash
@@ -58,13 +65,15 @@ cd StackDeploy
 
 # 2. Environment
 cp .env.example .env
-# Edit .env: set SERVER_IP and HONCHO_DB_PASSWORD
+# Edit .env: set SERVER_IP, HONCHO_DB_PASSWORD
+# Optional: set OBSIDIAN_VAULT_PATH (default: /home/<user>/ObsidianVault)
 
 # 3. Bring up the stack
 docker compose up -d
 
-# 4. Initialize Honcho
+# 4. Initialize services
 ./scripts/init-honcho.sh
+./scripts/init-obsidian.sh
 
 # 5. Verify
 ./scripts/healthcheck.sh <server-ip>
@@ -81,6 +90,7 @@ Key variables from `.env.example`:
 | `SERVER_IP` | Mesh-VPN or local IP used in docs/examples |
 | `HONCHO_DB_PASSWORD` | Postgres password for Honcho |
 | `HONCHO_TOKEN` | Auth token for Honcho API |
+| `OBSIDIAN_VAULT_PATH` | Host path for your Obsidian vault |
 | `OLLAMA_MODEL` | *(optional)* Model tag if you enable Ollama |
 | `MODEL_PATH` | *(optional)* GGUF path if you enable llama.cpp |
 | `CTX_SIZE` | *(optional)* Context window size for llama.cpp |
@@ -118,7 +128,8 @@ StackDeploy/
 ├── scripts/
 │   ├── bootstrap.sh
 │   ├── healthcheck.sh
-│   └── init-honcho.sh
+│   ├── init-honcho.sh
+│   └── init-obsidian.sh
 ├── docs/
 │   ├── SERVER_SETUP.md
 │   └── HERMES_SETUP.md
@@ -129,11 +140,11 @@ StackDeploy/
 
 ## Hermes Configuration
 
-After the stack is up, point Hermes at your services and your preferred LLM provider:
+After the stack is up, point Hermes at your services, LLM provider, and Obsidian vault:
 
 ```yaml
 model:
-  # Use your free cloud provider here — Hermes will pick this up automatically
+  # Use your free cloud provider here
   base_url: https://openrouter.ai/api/v1
   default: <provider-model-id>
   provider: openrouter
@@ -150,9 +161,13 @@ honcho:
   enabled: true
   base_url: "http://<SERVER_IP>:8081"
   workspace: hermes-main
+
+obsidian:
+  enabled: true
+  vault_path: /home/<user>/ObsidianVault
 ```
 
-For Obsidian note-taking, set the vault path in Hermes to your local vault folder. No extra service is needed — Hermes reads/writes markdown directly.
+For local Obsidian usage, open the vault folder `/home/<user>/ObsidianVault` in your Obsidian desktop app. No separate service is required — Hermes reads and writes markdown notes directly via the Obsidian skill.
 
 ---
 

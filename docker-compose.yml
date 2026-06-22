@@ -110,6 +110,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Optional: Obsidian (note-taking vault) ---
+  # obsidian:
+  #   image: ghcr.io/obsidianmd/web:latest
+  #   container_name: obsidian
+  #   ports:
+  #     - "8083:8080"
+  #   volumes:
+  #     - obsidian-vault:/vault
+  #   environment:
+  #     VAULT_PATH: /vault
+  #   restart: unless-stopped
+
   chrome:
     image: zenika/alpine-chrome:latest
     container_name: browser-chrome
@@ -145,4 +157,5 @@ volumes:
   honcho-redis:
   honcho-data:
   ollama-models:
+  obsidian-vault:
   qdrant-data:

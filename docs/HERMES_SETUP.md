@@ -8,6 +8,7 @@ Connect any Hermes client to the StackDeploy stack.
 - **Search**: `http://<server>:8080` (SearXNG)
 - **Browser**: `http://<server>:9222` (Chrome CDP)
 - **Honcho memory**: `http://<server>:8081`
+- **Obsidian**: vault path `/home/<user>/ObsidianVault` (or your chosen path)
 
 ## Manual config
 
@@ -31,6 +32,10 @@ honcho:
   enabled: true
   base_url: "http://<SERVER_IP>:8081"
   workspace: hermes-main
+
+obsidian:
+  enabled: true
+  vault_path: /home/<user>/ObsidianVault
 ```
 
-For Obsidian note-taking, set the vault path in Hermes to your local Obsidian directory. No separate service is required — Hermes reads and writes markdown directly.
+For Obsidian, install the desktop app locally and open the vault folder. Hermes will read and write notes directly through the Obsidian skill.
