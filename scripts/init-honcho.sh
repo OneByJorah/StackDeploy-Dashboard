@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-mkdir -p /home/j1admin/docker/j1-stack-deploy
-cat > /home/j1admin/docker/j1-stack-deploy/.env <<EOF
-SERVER_IP=REPLACE_WITH_YOUR_TAILSCALE_IP
-HONCHO_TOKEN=<REPLACE_WITH_YOUR_HONCHO_TOKEN>
-HONCHO_DB_PASSWORD=REPLACE_WITH_SECURE_PASSWORD
-EOF
-echo "init-honcho: wrote /home/j1admin/docker/j1-stack-deploy/.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [ ! -f "$REPO_ROOT/.env" ]; then
+  cp "$REPO_ROOT/.env.example" "$REPO_ROOT/.env"
+  echo "init-honcho: copied .env.example to .env"
+else
+  echo "init-honcho: .env already exists, skipping"
+fi

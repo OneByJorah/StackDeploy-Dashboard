@@ -1,7 +1,7 @@
 # StackDeploy (StackDeploy)
 
-**Version:** v0.1  
-**Status:** Active Development  
+**Version:** v1.3  
+**Status:** Production Ready  
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
 ---
@@ -13,7 +13,10 @@
 - [Technology Stack](#technology-stack)
 - [Features](#features)
 - [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
 - [Service Management](#service-management)
+- [CI/CD & Deployment](#cicd--deployment)
+- [Security](#security)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
 - [Contributing](#contributing)
@@ -24,34 +27,42 @@
 
 ## Overview
 
-Docker Compose / stack deployment automation for multi-service Linux environments.
+StackDeploy is a Docker Compose-based self-hosted stack for Hermes Agents. It consolidates local web search, long-term memory, browser automation, vector storage, and Obsidian note-taking into a reproducible, one-command deployment. The stack is designed to run on CPU-only hosts with no local GPU, while keeping the LLM layer intentionally external so you can plug in free cloud providers.
+
+Secrets and environment configuration are managed via `docker-compose.yml` and `.env`, never committed to version control.
 
 ---
 
 ## Architecture
 
-Client → Local service (`StackDeploy`) → data/processing modules → output/api layer.
-Secrets and environment configuration are managed via environment files with restrictive permissions.
+Client → Hermes Agent → Local services (SearXNG, Honcho, Chrome, Qdrant, Obsidian, PostgreSQL + Redis) → optional upstream LLM provider via Hermes config.
 
 ---
 
 ## Technology Stack
 
-|| Layer | Stack |
+| Layer | Stack |
 |---|---|
 | Runtime | Linux (Ubuntu 22.04+) |
 | Primary Stack | Docker Compose / Bash |
 | VCS | Git + GitHub (`github.com/OneByJorah/StackDeploy`) |
-| Dev Port | Localhost / systemd service |
+| Memory / Context | Honcho |
+| Notifications | Telegram (J1-bot) |
+| Release path | `git push origin main` (documentation/build on branch) |
 
 ---
 
 ## Features
 
-- Operational dashboard and monitoring (per repo).
-- Exportable data / reports where supported.
-- Extensible service-based design.
-- Dark-themed UI where applicable.
+- **SearXNG**: privacy-respecting self-hosted web search.
+- **Honcho API**: long-term memory and workspace context for Hermes.
+- **Chrome CDP**: browser automation via remote DevTools.
+- **Qdrant**: vector storage for semantic retrieval.
+- **Obsidian vault**: markdown-backed note-taking exposed via web UI.
+- **PostgreSQL + pgvector + Redis**: durable memory backend with vector support.
+- **One-command bootstrap**: clone, env, stack, init, healthcheck.
+- **Extensible service-based design**: add modules via Compose blocks.
+- **CPU-first design**: no local GPU required for base stack.
 
 ---
 
@@ -62,33 +73,81 @@ Secrets and environment configuration are managed via environment files with res
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
 
-# 2. Install dependencies
-# (see specific subproject docs)
+# 2. Environment
+cp .env.example .env
+# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
 
-# 3. Start the service
-# (see Service Management below)
+# 3. Start the stack
+docker compose up -d
+./scripts/init-honcho.sh
+./scripts/init-obsidian.sh
 ```
+
+---
+
+## Environment Variables
+
+| Variable | Purpose | Notes |
+|---|---|---|
+| `SERVER_IP` | Tailscale or local IP used in docs/examples | Required |
+| `HONCHO_TOKEN` | Auth token for Honcho API | Optional |
+| `HONCHO_DB_PASSWORD` | Postgres password for Honcho backend | Required |
+| `OBSIDIAN_VAULT_PATH` | Host path for the Obsidian vault | Optional |
+
+Keep `.env` out of VCS. Prefer `.env.example` placeholders in docs.
 
 ---
 
 ## Service Management
 
 ```bash
-# Start the service (example)
-sudo systemctl start StackDeploy.service
-sudo systemctl enable StackDeploy.service
+# Start the stack
+docker compose up -d
+
+# Stop
+docker compose down
+
+# Tail logs
+docker compose logs -f
+
+# Healthcheck
+./scripts/healthcheck.sh <server-ip>
 ```
 
-Access the service via your configured localhost port or reverse proxy.
+---
+
+## CI/CD & Deployment
+
+- Branch model: `main` for stable, feature branches for work-in-progress.
+- Use `git push origin <branch>` to publish changes and trigger downstream automation.
+- Keep Cheatsheet/docs in sync before merging: docs, README, and any changed service ports/endpoints.
+
+---
+
+## Security
+
+- Secrets are handled through `.env` files with restrictive permissions; never store raw API tokens in README or source.
+- Frontend artifacts and dashboard access paths are not credential-based in this repository.
+- Services expose ports on localhost / trusted interfaces by default; bind only to trusted networks in production.
 
 ---
 
 ## Project Structure
 
-```
+```text
 StackDeploy/
-├── README.md
-├── (additional project files)
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+├── scripts/
+│   ├── bootstrap.sh
+│   ├── healthcheck.sh
+│   ├── init-honcho.sh
+│   └── init-obsidian.sh
+├── docs/
+│   ├── SERVER_SETUP.md
+│   └── HERMES_SETUP.md
+└── README.md
 ```
 
 ---
@@ -104,8 +163,9 @@ _(Screenshots will be added after build/run capture.)_
 ## Contributing
 
 1. Create a feature branch off `main`.
-2. Follow the existing code style.
+2. Follow the existing code style and README section order.
 3. Submit a PR with description and screenshots for UI changes.
+4. Do not commit real secrets or `.env` files.
 
 ---
 
