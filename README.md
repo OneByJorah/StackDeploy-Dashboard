@@ -20,6 +20,7 @@
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
 - [Contributing](#contributing)
+- [Hermes Integration](#hermes-integration)
 - [License](#license)
 - [Author](#author)
 
@@ -223,6 +224,37 @@ _(Screenshots will be added after build/run capture.)_
 2. Follow the existing code style and README section order.
 3. Submit a PR with description and screenshots for UI changes.
 4. Do not commit real secrets or `.env` files.
+
+## Hermes Integration
+
+StackDeploy ships a first-class Hermes Agent skill.
+
+Local install path for Hermes:
+```bash
+~/.hermes/skills/devops/stackdeploy/SKILL.md
+```
+
+Inline commands Hermes uses with this stack:
+```bash
+# Health
+cd /home/<user>/StackDeploy && bash tests/smoke.sh
+
+# JSON search
+curl -s 'http://localhost:8080/search?format=json&q=<query>&language=en'
+
+# Browser automation
+cd /home/<user>/StackDeploy/browser-search && node scripts/cloak/cloak-fetch.mjs "https://example.com"
+```
+
+Docs:
+```bash
+cat docs/hermes.md
+```
+
+Script paths used by the Hermes skill:
+- `tests/smoke.sh`
+- `browser-search/scripts/cloak/cloak-fetch.mjs`
+- `scripts/init-obsidian.sh`
 
 ---
 
