@@ -6,7 +6,7 @@ services:
   honcho-api:
     build:
       context: vendor/honcho
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     entrypoint: ["sh", "docker/entrypoint.sh"]
     depends_on:
       honcho-db:
