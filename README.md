@@ -1,6 +1,6 @@
-# StackDeploy (StackDeploy)
+# StackDeploy
 
-**Version:** v1.3  
+**Version:** v2.0  
 **Status:** Production Ready  
 **Repository:** https://github.com/OneByJorah/StackDeploy
 
@@ -11,15 +11,16 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Technology Stack](#technology-stack)
+- [Services](#services)
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Service Management](#service-management)
+- [Admin Panel](#admin-panel)
 - [CI/CD & Deployment](#cicd--deployment)
 - [Security](#security)
 - [Project Structure](#project-structure)
 - [Screenshots](#screenshots)
-- [Contributing](#contributing)
 - [Hermes Integration](#hermes-integration)
 - [License](#license)
 - [Author](#author)
@@ -28,169 +29,261 @@
 
 ## Overview
 
-StackDeploy is a Docker Compose-based self-hosted stack for Hermes Agents. It consolidates local web search, long-term memory, browser automation, vector storage, and Obsidian note-taking into a reproducible, one-command deployment. The stack is designed to run on CPU-only hosts with no local GPU, while keeping the LLM layer intentionally external so you can plug in free cloud providers.
+StackDeploy is a **unified, production-ready Docker Compose deployment** that consolidates self-hosted web search, long-term memory, browser automation, vector storage, and Obsidian note-taking under a single IP with centralized management. Designed to run on consumer hardware with Mesh-VPN networking, exposing everything through direct ports.
 
-Bundled integrations:
-- **browser-search**: SearXNG + Camofox + CloakBrowser for search and protected-site browsing
-- **obsidian-skills**: Agent skills for Obsidian Markdown, Bases, JSON Canvas, CLI, and Defuddle extraction
+**Core philosophy:** One stack, one IP, one admin panel, zero secrets in git.
 
-Secrets and environment configuration are managed via `docker-compose.yml` and `.env`, never committed to version control.
+### Bundled Services
+
+| Category | Services |
+|----------|----------|
+| **Search & Browser** | SearXNG (8080), Camofox (9377), CloakBrowser (9222) |
+| **Memory & Knowledge** | Honcho Memory API (8081) + pgvector/Redis, Qdrant (6333) |
+| **Notes & Docs** | Obsidian Remote (8083) |
+| **Admin & Ops** | **Portainer (9000/9443)** - Full container management |
 
 ---
 
 ## Architecture
 
-Client → Hermes Agent → Local services (SearXNG, Camofox, Qdrant, Obsidian, PostgreSQL + Redis) → optional upstream LLM provider via Hermes config.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MESH_VPN NETWORK                            │
+│  100.92.150.99 (ollama host)                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    STACKDEPLOY                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  SEARCH & BROWSER              MEMORY & KNOWLEDGE          │  │
+│  │  SearXNG (8080)                Honcho API (8081)           │  │
+│  │  Camofox (9377)                Qdrant (6333)               │  │
+│  │  CloakBrowser (9222)           PostgreSQL + Redis          │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│        ┌─────────────────────┼─────────────────────┐             │
+│        ▼                     ▼                     ▼             │
+│  ┌───────────┐         ┌───────────┐         ┌───────────┐     │
+│  │  NOTES    │         │  ADMIN    │         │  OPTIONAL │     │
+│  │ Obsidian  │         │ Portainer │         │ Ollama    │     │
+│  │ (8083)    │         │ (9000)    │         │ (11434)   │     │
+│  └───────────┘         └───────────┘         └───────────┘     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Data Flow:**
+- Hermes Agent → Local services (search, memory, browser) → Optional upstream LLM via Hermes config
+- All services communicate over Docker internal network
+- Single Mesh-VPN IP exposes everything via direct ports
 
 ---
 
 ## Technology Stack
 
 | Layer | Stack |
-|---|---|
-| Runtime | Linux (Ubuntu 22.04+) |
-| Primary Stack | Docker Compose / Bash |
+|-------|-------|
+| Runtime | Linux (Ubuntu 22.04+), Docker Compose |
+| Orchestration | Docker Compose v2, Bash bootstrap scripts |
 | VCS | Git + GitHub (`github.com/OneByJorah/StackDeploy`) |
-| Memory / Context | Honcho |
+| Memory/Context | Honcho (pgvector + Redis), Qdrant |
+| Search | SearXNG + Camofox (stealth browser) |
+| Notes | Obsidian Remote (web UI) |
+| Admin | **Portainer CE** (full container lifecycle, RBAC, backups) |
 | Notifications | Telegram (J1-bot) |
-| Release path | `git push origin main` (documentation/build on branch) |
+| CI/CD | GitHub Actions (build, test, deploy) |
+
+---
+
+## Services
+
+| Service | Port | Health Endpoint | Purpose |
+|---------|------|-----------------|---------|
+| **SearXNG** | 8080 | `/search?q=healthcheck&format=json` | Privacy-respecting metasearch |
+| **Camofox** | 9377 | `/health` | Stealth browser automation API |
+| **CloakBrowser** | 9222 | `/json/version` | Stealth browser for protected sites |
+| **Obsidian** | 8083 | `/` | Remote vault web UI |
+| **Qdrant** | 6333 | `/readyz` | Vector database |
+| **Honcho API** | 8081 | `/healthz` | Long-term memory for agents |
+| **Honcho DB** | 5432 | `pg_isready` | PostgreSQL + pgvector |
+| **Honcho Redis** | 6379 | `redis-cli ping` | Cache layer |
+| **Portainer** | 9000/9443 | `/` | **Admin panel - full container mgmt** |
 
 ---
 
 ## Features
 
-- **SearXNG**: privacy-respecting self-hosted web search.
-- **Camofox**: browser navigation via REST API for standard sites.
-- **CloakBrowser**: stealth browser fallback for anti-bot protected sites.
-- **Honcho API**: long-term memory and workspace context for Hermes.
-- **Qdrant**: vector storage for semantic retrieval.
-- **Obsidian vault**: markdown-backed note-taking exposed via web UI.
-- **Obsidian Skills**: agent-ready skills for Markdown, Bases, Canvas, CLI, and Defuddle extraction.
-- **PostgreSQL + pgvector + Redis**: durable memory backend with vector support.
-- **One-command bootstrap**: clone, env, stack, init, healthcheck.
-- **Extensible service-based design**: add modules via Compose blocks.
-- **CPU-first design**: no local GPU required for base stack.
+- ✅ **Single-command bootstrap** - `./scripts/bootstrap.sh` clones, configures, starts, validates
+- ✅ **Zero-secrets in git** - `.env.example` documents all vars; `.env` is gitignored
+- ✅ **Health checks on every service** - Docker healthchecks + `./scripts/healthcheck.sh`
+- ✅ **Portainer admin panel** - Visual container management, logs, stats, backups, RBAC
+- ✅ **CPU-first with GPU option** - Runs on CPU; Ollama on Mesh-VPN host for GPU inference
+- ✅ **Extensible Compose blocks** - Add services by dropping in compose fragments
+- ✅ **CI/CD pipeline** - GitHub Actions: lint, build, test, deploy on push
+- ✅ **Hermes Agent integration** - Skills for search, memory, browser, notes
 
 ---
 
 ## Getting Started
 
+### Prerequisites
+- Docker 24+ & Docker Compose v2
+- Mesh-VPN (for multi-host Ollama access)
+- 8GB+ RAM, 50GB+ disk
+
+### Quick Start
+
 ```bash
-# 1. Clone the repository
+# 1. Clone
 git clone https://github.com/OneByJorah/StackDeploy.git
 cd StackDeploy
 
-# 2. Environment
+# 2. Configure environment
 cp .env.example .env
-# Edit .env: set SERVER_IP, HONCHO_TOKEN, HONCHO_DB_PASSWORD
+# Edit .env: set HONCHO_DB_PASSWORD, NEO4J_AUTH, CAMOFOX_API_KEY, etc.
 
-# 3. Start the stack
-docker compose up -d
-./scripts/init-honcho.sh
-./scripts/init-obsidian.sh
+# 3. One-command deploy
+./scripts/bootstrap.sh
+
+# 4. Verify
+./scripts/healthcheck.sh localhost
 ```
+
+### Manual Start
+
+```bash
+docker compose up -d
+./scripts/healthcheck.sh localhost
+```
+
+### Access Points
+
+| Interface | URL |
+|-----------|-----|
+| **Portainer (Admin)** | http://localhost:9000 (HTTPS: 9443) |
+| **SearXNG** | http://localhost:8080 |
+| **Camofox** | http://localhost:9377 |
+| **CloakBrowser** | http://localhost:9222 |
+| **Obsidian** | http://localhost:8083 |
+| **Honcho API** | http://localhost:8081 |
+| **Qdrant** | http://localhost:6333 |
 
 ---
 
 ## Environment Variables
 
-| Variable | Purpose | Notes |
-|---|---|---|
-| `SERVER_IP` | Mesh-VPN or local IP used in docs/examples | Required |
-| `HONCHO_TOKEN` | Auth token for Honcho API | Optional |
-| `HONCHO_DB_PASSWORD` | Postgres password for Honcho backend | Required |
-| `OBSIDIAN_VAULT_PATH` | Host path for the Obsidian vault | Optional |
+All secrets in `.env` (never committed). See `.env.example` for full list.
 
-Keep `.env` out of VCS. Prefer `.env.example` placeholders in docs.
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `HONCHO_DB_PASSWORD` | PostgreSQL password for Honcho | Yes |
+| `CAMOFOX_API_KEY` | Camofox auth key | Optional |
+| `CAMOFOX_ADMIN_KEY` | Camofox admin key | Optional |
+| `OBSIDIAN_VAULT_PATH` | Host path for Obsidian vault | Optional |
+| `SERVER_IP` | Mesh-VPN/local IP for docs | Optional |
+| `NEO4J_AUTH` | Neo4j auth (if enabled) | Optional |
 
 ---
 
 ## Service Management
 
 ```bash
-# Start the stack
+# Start all
 docker compose up -d
 
-# Stop
+# Stop all
 docker compose down
 
-# Tail logs
+# View logs (all or specific)
 docker compose logs -f
+docker compose logs -f honcho
 
-# Healthcheck
-./scripts/healthcheck.sh <server-ip>
+# Restart single service
+docker compose restart honcho
+
+# Health check
+./scripts/healthcheck.sh localhost
+
+# Full status
+docker compose ps
 ```
 
-## Browser-search
+### Portainer Admin Panel
 
-Self-hosted search and browsing via SearXNG, Camofox, and CloakBrowser.
+**The primary management interface.** After first start:
+1. Open http://localhost:9000
+2. Create admin user
+3. Select "Docker" environment (local)
+4. Manage all containers: start/stop, logs, stats, console, volumes, networks
 
-**Endpoints**
+Features used:
+- **Container lifecycle** - restart, update images, recreate
+- **Logs & console** - debug without SSH
+- **Resource stats** - CPU, memory, network per container
+- **Volumes & networks** - inspect, backup, prune
+- **RBAC** - team access control
+- **Backup/Restore** - Portainer settings + stack configs
 
-| Service | Port | Notes |
-|---|---|---|
-| SearXNG | `8080` | JSON API: `/search?format=json&q=<query>` |
-| Camofox | `9377` | REST API: `/docs` for Swagger UI |
+---
 
-**Setup**
+## Admin Panel
 
-```bash
-cd browser-search
-npm install
-```
+**Portainer** is the single admin interface for the entire stack. No custom admin panel code needed - Portainer provides:
 
-Optional: run Camofox with auth keys in `.env`:
-```bash
-camofox_api_key=... camofox_admin_key=... docker compose up -d
-```
+- ✅ Container management (start/stop/restart/recreate)
+- ✅ Real-time logs & console access
+- ✅ Resource monitoring (CPU, RAM, network, disk)
+- ✅ Volume & network management
+- ✅ Image management (pull, prune, tag)
+- ✅ Stack deployment from git
+- ✅ RBAC for team access
+- ✅ Backup/restore of Portainer config
 
-CloakBrowser is included as npm scripts:
-```bash
-node scripts/cloak/cloak-fetch.mjs "https://example.com"
-```
-
-## Obsidian Skills
-
-Agent-readable skills for working with Obsidian vaults.
-
-| Skill | Purpose |
-|---|---|
-| `obsidian-markdown` | Create/edit Obsidian Flavored Markdown |
-| `obsidian-bases` | Create/edit `.base` views and filters |
-| `json-canvas` | Create/edit `.canvas` mind maps |
-| `obsidian-cli` | Interact with vault via `obsidian` CLI |
-| `defuddle` | Extract clean markdown from URLs |
-
-These skills are available at `obsidian-skills/skills/`. If your agent loads skills from a directory, point it there. For Obsidian CLI, ensure the desktop app is installed and accessible on the host.
+---
 
 ## CI/CD & Deployment
 
-- Branch model: `main` for stable, feature branches for work-in-progress.
-- Use `git push origin <branch>` to publish changes and trigger downstream automation.
-- Keep Cheatsheet/docs in sync before merging: docs, README, and any changed service ports/endpoints.
+**GitHub Actions** (`.github/workflows/ci-cd.yml`):
+
+```yaml
+# Triggers: push to main, PR to main
+# Jobs:
+#   1. lint       - hadolint, shellcheck, yamllint
+#   2. build      - docker compose build (all services)
+#   3. test       - spin up stack, run healthcheck.sh
+#   4. deploy     - SSH to server, pull, restart (on main)
+```
+
+**Branch model:** `main` = stable; feature branches for WIP.
+
+**Deploy:** `git push origin main` → auto-deploys to configured host via SSH.
 
 ---
 
 ## Security
 
-- Secrets are handled through `.env` files with restrictive permissions; never store raw API tokens in README or source.
-- Frontend artifacts and dashboard access paths are not credential-based in this repository.
-- Services expose ports on localhost / trusted interfaces by default; bind only to trusted networks in production.
+- **No secrets in git** - `.env` in `.gitignore`; `.env.example` has placeholders
+- **Portainer auth** - Admin user required on first access; RBAC for teams
+- **Network isolation** - Services on internal Docker network; only explicitly mapped ports exposed
+- **Mesh-VPN** - All inter-host traffic encrypted; no public ports needed
+- **Read-only mounts** - Config files mounted `:ro` where possible
+- **Non-root containers** - Most services run as unprivileged users
 
 ---
 
 ## Project Structure
 
-```text
+```
 StackDeploy/
-├── docker-compose.yml
-├── .env.example
+├── docker-compose.yml          # 9 services, validated
+├── .env.example                # Documented placeholders
+├── .env                        # Local secrets (gitignored)
 ├── .gitignore
-├── browser-search/         # browser-search skill + scripts (CloakBrowser, Camofox helper)
+├── browser-search/             # Camofox + CloakBrowser helpers
 │   ├── SKILL.md
 │   ├── scripts/
 │   └── docker/
-├── obsidian-skills/        # kepano/obsidian-skills agent skills
+├── obsidian-skills/            # Agent skills for Obsidian
 │   └── skills/
 │       ├── defuddle/
 │       ├── json-canvas/
@@ -198,10 +291,13 @@ StackDeploy/
 │       ├── obsidian-cli/
 │       └── obsidian-markdown/
 ├── scripts/
-│   ├── bootstrap.sh
-│   ├── healthcheck.sh
-│   ├── init-honcho.sh
-│   └── init-obsidian.sh
+│   ├── bootstrap.sh            # One-command deploy
+│   ├── healthcheck.sh          # Validates all 9 services
+│   ├── init-honcho.sh          # Honcho alembic migrations
+│   └── init-obsidian.sh        # Vault initialization
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml           # Full CI/CD pipeline
 ├── docs/
 │   ├── SERVER_SETUP.md
 │   └── HERMES_SETUP.md
@@ -212,48 +308,70 @@ StackDeploy/
 
 ## Screenshots
 
-All screenshots are live captures from the local dev instance.
+All screenshots are live captures from the local dev instance (100.92.150.99).
 
-_(Screenshots will be added after build/run capture.)_
+### Portainer Admin Panel (Port 9000)
+![Portainer](docs/screenshots/portainer.png)
+*Full container lifecycle management*
+
+### SearXNG Search (Port 8080)
+![SearXNG](docs/screenshots/searxng.png)
+*Privacy-respecting metasearch*
+
+### Camofox Browser (Port 9377)
+![Camofox](docs/screenshots/camofox.png)
+*Stealth browser automation*
+
+### Obsidian Remote (Port 8083)
+![Obsidian](docs/screenshots/obsidian.png)
+*Web-based vault access*
+
+### Honcho Memory API (Port 8081)
+![Honcho](docs/screenshots/honcho.png)
+*Long-term memory for agents*
 
 ---
 
-## Contributing
-
-1. Create a feature branch off `main`.
-2. Follow the existing code style and README section order.
-3. Submit a PR with description and screenshots for UI changes.
-4. Do not commit real secrets or `.env` files.
-
 ## Hermes Integration
 
-StackDeploy ships a first-class Hermes Agent skill.
+StackDeploy ships first-class Hermes Agent skills.
 
-Local install path for Hermes:
+### Local Install Path
+
 ```bash
-~/.hermes/profiles/agent-20260614-212330/skills/autonomous-ai-agents/selfhosted-stack-deploy/SKILL.md
+~/.hermes/skills/devops/stackdeploy/SKILL.md
 ```
 
-Inline Hermes commands:
+### Inline Commands
+
 ```bash
-cd /home/<user>/StackDeploy && bash tests/smoke.sh
-docker compose ps
+# Health check
+cd /home/<user>/StackDeploy && bash scripts/healthcheck.sh localhost
+
+# JSON search via SearXNG
 curl -s 'http://localhost:8080/search?format=json&q=<query>&language=en'
-cd /home/<user>/StackDeploy/browser-search && bash scripts/install-browser-search.sh
-node scripts/cloak/cloak-fetch.mjs "https://example.com"
+
+# Browser automation via Camofox
+curl -X POST http://localhost:9377/api/v1/browse \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com", "action": "screenshot"}'
+
+# CloakBrowser for protected sites
+cd /home/<user>/StackDeploy/browser-search && node scripts/cloak/cloak-fetch.mjs "https://example.com"
+
+# Honcho memory operations
+curl -X POST http://localhost:8081/api/v1/memory \
+  -H "Authorization: Bearer $HONCHO_TOKEN" \
+  -d '{"text": "Remember this..."}'
 ```
 
-Hermes config:
-```yaml
-web:
-  backend: searxng
-  searxng_url: "http://127.0.0.1:8080"
-```
+### Skill Files
 
-Docs:
-```bash
-cat docs/hermes.md
-```
+| Script | Purpose |
+|--------|---------|
+| `scripts/healthcheck.sh` | Full stack validation |
+| `scripts/bootstrap.sh` | One-command deploy |
+| `scripts/init-honcho.sh` | Run alembic migrations |
 
 ---
 
@@ -265,4 +383,8 @@ MIT
 
 ## Author
 
-Built by **Jhonattan L. Jimenez**.
+Built by **Jhonattan L. Jimenez** (J1admin).
+
+- GitHub: [@OneByJorah](https://github.com/OneByJorah)
+- Mesh-VPN: `ollama` (100.92.150.99)
+- Primary GPU: RTX 3060 12GB
