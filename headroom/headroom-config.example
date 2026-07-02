@@ -1,0 +1,8 @@
+# Headroom / Aphrodite local runtime config
+# Copy to ~/.headroom/headroom-config.toml or repo-local headroom/config and adjust.
+#
+# Priority remains: env vars > config file > compiled defaults.
+
+# Example: proxy listen override when not using Docker:
+# host = "0.0.0.0"
+# port = 8787

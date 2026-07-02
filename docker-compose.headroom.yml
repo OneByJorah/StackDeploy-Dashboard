@@ -1,0 +1,75 @@
+services:
+  # --- Headroom / Aphrodite proxy + memory stack ---
+  # Composite command:
+  # docker compose -f docker-compose.yml -f docker-compose.headroom.yml up -d
+  headroom-proxy:
+    build:
+      context: vendor/headroom
+      dockerfile: Dockerfile
+    command: ["--host", "0.0.0.0"]
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env.headroom
+    environment:
+      - HEADROOM_HOST=0.0.0.0
+      - OPENAI_TARGET_API_URL=${HEADROOM_OPENAI_TARGET_API_URL:-}
+    volumes:
+      - headroom_workspace:/home/nonroot/.headroom
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8787/readyz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      headroom-qdrant:
+        condition: service_healthy
+      headroom-neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+
+  headroom-qdrant:
+    image: qdrant/qdrant:v1.17.1
+    container_name: headroom-qdrant
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - headroom-qdrant-data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:6333/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  headroom-neo4j:
+    image: neo4j:5.26
+    container_name: headroom-neo4j
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    volumes:
+      - headroom-neo4j-data:/data
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH:-neo4j/CHANGEME}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:7474/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  headroom_workspace:
+  headroom-qdrant-data:
+  headroom-neo4j-data:
