@@ -1,0 +1,5 @@
+.git
+.gitmodules
+vendor/**/.git
+node_modules
+docs/.next
