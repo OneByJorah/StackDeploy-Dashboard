@@ -37,10 +37,11 @@ StackDeploy is a **unified, production-ready Docker Compose deployment** that co
 
 | Category | Services |
 |----------|----------|
-| **Search & Browser** | SearXNG (8080), Camofox (9377), CloakBrowser (9222) |
-| **Memory & Knowledge** | Honcho Memory API (8081) + pgvector/Redis, Qdrant (6333) |
-| **Notes & Docs** | Obsidian Remote (8083) |
-| **Admin & Ops** | **Portainer (9000/9443)** - Full container management |
+|| **Search & Browser** | SearXNG (8080), Camofox (9377), CloakBrowser (9222) |
+|| **Memory & Knowledge** | Honcho Memory API (8081) + pgvector/Redis, Qdrant (6333) |
+|| **Notes & Docs** | Obsidian Remote (8083) |
+|| **Admin & Ops** | **Portainer (9000/9443)** - Full container management |
+| **Monitoring** | **NOC Dashboard (9500)** — read-only unified health + Portainer stats |
 
 ---
 
@@ -160,6 +161,7 @@ docker compose up -d
 
 | Interface | URL |
 |-----------|-----|
+| **NOC Dashboard** | http://localhost:9500 |
 | **Portainer (Admin)** | http://localhost:9000 (HTTPS: 9443) |
 | **SearXNG** | http://localhost:8080 |
 | **Camofox** | http://localhost:9377 |
@@ -167,6 +169,7 @@ docker compose up -d
 | **Obsidian** | http://localhost:8083 |
 | **Honcho API** | http://localhost:8081 |
 | **Qdrant** | http://localhost:6333 |
+| **Ollama** | http://localhost:11434 |
 
 ---
 
@@ -182,6 +185,12 @@ All secrets in `.env` (never committed). See `.env.example` for full list.
 | `OBSIDIAN_VAULT_PATH` | Host path for Obsidian vault | Optional |
 | `SERVER_IP` | Tailscale/local IP for docs | Optional |
 | `NEO4J_AUTH` | Neo4j auth (if enabled) | Optional |
+| `NOC_POLL_INTERVAL` | NOC Dashboard poll interval (seconds) | Optional |
+| `PORTAINER_URL` | Portainer base URL for dashboard integration | Optional |
+| `PORTAINER_API_KEY` | Portainer API key for container stats | Optional |
+| `ENABLE_HEADROOM_MONITORING` | Enable Headroom services in dashboard | Optional |
+| `OLLAMA_HOST` | Ollama Cloud hostname | Optional |
+| `OLLAMA_PORT` | Ollama Cloud port | Optional |
 
 ---
 
@@ -238,6 +247,45 @@ Features used:
 - ✅ Stack deployment from git
 - ✅ RBAC for team access
 - ✅ Backup/restore of Portainer config
+
+## NOC Dashboard
+
+**Unified read-only monitoring dashboard** (`noc-dashboard` service). Open `http://localhost:9500` to see:
+
+- **Service health** — same endpoints as `healthcheck.sh`, polled on an interval
+- **Latency sparklines** — rolling history per service
+- **Portainer stats** — optional container state/live counts from Portainer API
+- **Ollama inference** — checks Ollama Cloud availability on the host network
+- **No proxying** — each service still exposes its own port/API directly
+
+### Deploy
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dashboard.yml up -d --build
+```
+
+### Optional overlays
+
+```bash
+# With Portainer + Headroom
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.dashboard.yml \
+  -f docker-compose.portainer.yml \
+  -f docker-compose.headroom.yml \
+  up -d --build
+```
+
+### Env vars
+
+| Variable | Purpose | Default |
+|----------|---------|--------|
+| `NOC_POLL_INTERVAL` | Seconds between polls | `10` |
+| `PORTAINER_URL` | Portainer API base | empty (disabled) |
+| `PORTAINER_API_KEY` | Portainer API key | empty (disabled) |
+| `ENABLE_HEADROOM_MONITORING` | Monitor Headroom services | `false` |
+| `OLLAMA_HOST` | Ollama container/host name | `ollama` |
+| `OLLAMA_PORT` | Ollama port | `11434` |
 
 ---
 
