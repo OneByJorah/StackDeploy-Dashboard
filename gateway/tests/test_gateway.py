@@ -22,6 +22,7 @@ client = TestClient(app)
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(autouse=True)
 def reset_env():
     """Ensure test env vars are always set before each test."""
@@ -48,6 +49,7 @@ def mock_health_response(healthy=True):
 
 # ── /health endpoint ─────────────────────────────────────────────────────────
 
+
 class TestHealthEndpoint:
     def test_health_returns_200(self):
         """GET /health should return 200 OK."""
@@ -69,6 +71,7 @@ class TestHealthEndpoint:
 
 
 # ── /api/v1/discover endpoint ────────────────────────────────────────────────
+
 
 class TestDiscoverEndpoint:
     def test_discover_returns_200_without_auth(self):
@@ -161,6 +164,7 @@ class TestDiscoverEndpoint:
 
         # Re-import app to pick up env var — but lazy approach: just check directly
         from server import app as app2
+
         c2 = TestClient(app2)
         response = c2.get("/api/v1/discover")
         data = response.json()
@@ -173,6 +177,7 @@ class TestDiscoverEndpoint:
         mock_async_client.return_value = mock_health_response(healthy=True)
 
         from server import app as app3
+
         c3 = TestClient(app3)
         response = c3.get("/api/v1/discover")
         data = response.json()
@@ -193,6 +198,7 @@ class TestDiscoverEndpoint:
 
 
 # ── /api/v1/health endpoint ─────────────────────────────────────────────────
+
 
 class TestAggregatedHealthEndpoint:
     def test_aggregated_health_returns_200(self):
@@ -240,6 +246,7 @@ class TestAggregatedHealthEndpoint:
 
 # ── /onboard and / endpoints ─────────────────────────────────────────────────
 
+
 class TestOnboardingEndpoints:
     def test_onboard_returns_html(self):
         """GET /onboard should return HTML."""
@@ -269,6 +276,7 @@ class TestOnboardingEndpoints:
 
 # ── Auth edge cases ─────────────────────────────────────────────────────────
 
+
 class TestAuthEdgeCases:
     def test_discover_no_auth_still_returns_services(self):
         """Without auth, /api/v1/discover should still return services."""
@@ -284,7 +292,9 @@ class TestAuthEdgeCases:
 
         assert unauth["platform"] == auth["platform"]
         assert unauth["total_count"] == auth["total_count"]
-        assert set(s["name"] for s in unauth["services"]) == set(s["name"] for s in auth["services"])
+        assert set(s["name"] for s in unauth["services"]) == set(
+            s["name"] for s in auth["services"]
+        )
 
     def test_health_ignores_auth(self):
         """/health should work identically with or without auth."""
@@ -295,6 +305,7 @@ class TestAuthEdgeCases:
 
 
 # ── Service registry integrity ──────────────────────────────────────────────
+
 
 class TestServiceRegistry:
     def test_all_services_have_required_fields(self):
@@ -310,7 +321,9 @@ class TestServiceRegistry:
     def test_host_port_mapping_unique(self):
         """Each service should have a unique host:port combination."""
         host_ports = [(svc["host"], svc["port"]) for svc in SERVICE_REGISTRY.values()]
-        assert len(host_ports) == len(set(host_ports)), "Duplicate host:port found in SERVICE_REGISTRY"
+        assert len(host_ports) == len(set(host_ports)), (
+            "Duplicate host:port found in SERVICE_REGISTRY"
+        )
         # Note: Docker allows different containers to use the same internal port.
         # searxng and obsidian both use port 8080 internally but have different hostnames.
 

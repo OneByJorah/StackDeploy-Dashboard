@@ -28,22 +28,47 @@ HEALTHCHECK_TIMEOUT = 5.0  # seconds per service health check
 
 # Services that are expected to always be online (cloakbrowser requires private ghcr.io)
 ALWAYS_ONLINE = {
-    "gateway": {"host": "gateway", "port": 9090, "description": "StackDeploy Gateway API"},
-    "searxng": {"host": "searxng", "port": 8080, "description": "Private meta-search engine"},
+    "gateway": {
+        "host": "gateway",
+        "port": 9090,
+        "description": "StackDeploy Gateway API",
+    },
+    "searxng": {
+        "host": "searxng",
+        "port": 8080,
+        "description": "Private meta-search engine",
+    },
     "qdrant": {"host": "qdrant", "port": 6333, "description": "Vector database"},
-    "honcho": {"host": "honcho", "port": 8000, "description": "AI memory & session management"},
-    "camofox": {"host": "camofox-browser", "port": 9377, "description": "Browser automation"},
-    "obsidian": {"host": "obsidian", "port": 8080, "description": "Notes & knowledge management"},
+    "honcho": {
+        "host": "honcho",
+        "port": 8000,
+        "description": "AI memory & session management",
+    },
+    "camofox": {
+        "host": "camofox-browser",
+        "port": 9377,
+        "description": "Browser automation",
+    },
+    "obsidian": {
+        "host": "obsidian",
+        "port": 8080,
+        "description": "Notes & knowledge management",
+    },
     "ollama": {"host": "ollama", "port": 11434, "description": "Local LLM inference"},
 }
 
 # Services that may be offline (private images, not deployed)
 OPTIONALLY_OFFLINE = {
-    "cloakbrowser": {"host": "cloak-browser", "port": 9222, "description": "Protected browser"},
+    "cloakbrowser": {
+        "host": "cloak-browser",
+        "port": 9222,
+        "description": "Protected browser",
+    },
 }
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def get_json(path: str, auth: tuple = None) -> dict:
     """GET a path on the gateway and return parsed JSON."""
@@ -63,6 +88,7 @@ def get_text(path: str) -> str:
 
 # ── Pre-checks ───────────────────────────────────────────────────────────────
 
+
 def test_gateway_is_reachable():
     """The gateway must be running before any integration tests run."""
     try:
@@ -77,6 +103,7 @@ def test_gateway_is_reachable():
 
 
 # ── /health endpoint ─────────────────────────────────────────────────────────
+
 
 class TestHealthEndpoint:
     def test_health_returns_200(self):
@@ -99,6 +126,7 @@ class TestHealthEndpoint:
 
 
 # ── /api/v1/discover endpoint ────────────────────────────────────────────────
+
 
 class TestDiscoverEndpoint:
     def test_discover_returns_200(self):
@@ -130,11 +158,17 @@ class TestDiscoverEndpoint:
             assert "healthy" in svc, f"{svc.get('name', '?')} missing 'healthy'"
             assert "description" in svc, f"{svc['name']} missing 'description'"
             assert "internal_url" in svc, f"{svc['name']} missing 'internal_url'"
-            assert isinstance(svc["healthy"], bool), f"{svc['name']} 'healthy' must be bool"
-            assert isinstance(svc["description"], str), f"{svc['name']} 'description' must be str"
+            assert isinstance(svc["healthy"], bool), (
+                f"{svc['name']} 'healthy' must be bool"
+            )
+            assert isinstance(svc["description"], str), (
+                f"{svc['name']} 'description' must be str"
+            )
             # internal_url must be a valid URL
             parsed = urlparse(svc["internal_url"])
-            assert parsed.scheme in ("http", "https"), f"{svc['name']} bad URL scheme: {svc['internal_url']}"
+            assert parsed.scheme in ("http", "https"), (
+                f"{svc['name']} bad URL scheme: {svc['internal_url']}"
+            )
             assert parsed.hostname, f"{svc['name']} bad URL: {svc['internal_url']}"
 
     def test_discover_gateway_is_healthy(self):
@@ -173,14 +207,20 @@ class TestDiscoverEndpoint:
             url = svc["internal_url"]
             parsed = urlparse(url)
             # The hostname should be a Docker service name, not localhost or IP
-            assert parsed.hostname != "localhost", f"{svc['name']} uses localhost, not Docker hostname"
-            assert parsed.hostname != "127.0.0.1", f"{svc['name']} uses 127.0.0.1, not Docker hostname"
+            assert parsed.hostname != "localhost", (
+                f"{svc['name']} uses localhost, not Docker hostname"
+            )
+            assert parsed.hostname != "127.0.0.1", (
+                f"{svc['name']} uses 127.0.0.1, not Docker hostname"
+            )
 
     def test_discover_gateway_url_matches(self):
         """Gateway's internal URL should point to itself."""
         data = get_json("/api/v1/discover")
         gw = next(s for s in data["services"] if s["name"] == "gateway")
-        assert gw["internal_url"] == f"http://gateway:{ALWAYS_ONLINE['gateway']['port']}"
+        assert (
+            gw["internal_url"] == f"http://gateway:{ALWAYS_ONLINE['gateway']['port']}"
+        )
 
     def test_discover_searxng_port(self):
         data = get_json("/api/v1/discover")
@@ -201,10 +241,13 @@ class TestDiscoverEndpoint:
         """Ollama should be healthy when deployed with --with-local-llm."""
         data = get_json("/api/v1/discover")
         ol = next(s for s in data["services"] if s["name"] == "ollama")
-        assert ol["healthy"] is True, "Ollama should be healthy when stack is deployed with --with-local-llm"
+        assert ol["healthy"] is True, (
+            "Ollama should be healthy when stack is deployed with --with-local-llm"
+        )
 
 
 # ── /api/v1/health endpoint ─────────────────────────────────────────────────
+
 
 class TestAggregatedHealthEndpoint:
     def test_health_returns_200(self):
@@ -233,6 +276,7 @@ class TestAggregatedHealthEndpoint:
 
 
 # ── /onboard and / endpoints ────────────────────────────────────────────────
+
 
 class TestOnboardingEndpoints:
     def test_onboard_returns_html(self):
@@ -268,6 +312,7 @@ class TestOnboardingEndpoints:
 
 
 # ── Cross-endpoint consistency ──────────────────────────────────────────────
+
 
 class TestCrossEndpointConsistency:
     def test_discover_and_health_return_same_services(self):

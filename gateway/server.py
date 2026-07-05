@@ -103,7 +103,9 @@ def verify_admin(credentials: Optional[HTTPBasicCredentials] = Depends(security)
     return credentials.username
 
 
-def verify_admin_optional(credentials: Optional[HTTPBasicCredentials] = Depends(security)):
+def verify_admin_optional(
+    credentials: Optional[HTTPBasicCredentials] = Depends(security),
+):
     """Returns username if authenticated, None if no auth provided."""
     if credentials is None:
         return None
@@ -134,6 +136,7 @@ async def check_service_health(name: str, svc: dict) -> dict:
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 async def health():
