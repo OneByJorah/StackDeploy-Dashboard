@@ -1,0 +1,10 @@
+# Ruff linter configuration for StackDeploy Dashboard Gateway
+# See: https://docs.astral.sh/ruff/
+
+target-version = "py312"
+
+[lint]
+select = ["F", "E", "W", "I"]
+ignore = [
+  "E501",  # line-too-long — keep relaxed for readability
+]
