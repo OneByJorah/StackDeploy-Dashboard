@@ -1,21 +1,45 @@
+# Dependabot configuration
+# See: https://docs.github.com/code-security/dependabot/dependabot-version-updates
+
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/gateway"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
+    reviewers:
+      - "OneByJorah"
+
+  - package-ecosystem: "docker"
+    directory: "/gateway"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "deps(docker)"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci"
