@@ -5,17 +5,17 @@ Uses FastAPI TestClient with httpx mocking to avoid external network calls.
 """
 
 import os
-import json
-from unittest.mock import patch, AsyncMock
-from httpx import AsyncClient
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 # Set test environment before importing the app
 os.environ["GATEWAY_USERNAME"] = "admin"
 os.environ["GATEWAY_PASSWORD"] = "testpass"
 
-from server import app, SERVICE_REGISTRY
+from server import SERVICE_REGISTRY, app
 
 client = TestClient(app)
 

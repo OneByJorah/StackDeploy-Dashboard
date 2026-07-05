@@ -14,7 +14,6 @@ Run with:  pytest gateway/tests/test_integration.py -v
 """
 
 import os
-import time
 from urllib.parse import urlparse
 
 import httpx
@@ -127,7 +126,7 @@ class TestDiscoverEndpoint:
     def test_discover_each_service_has_required_fields(self):
         data = get_json("/api/v1/discover")
         for svc in data["services"]:
-            assert "name" in svc, f"Service missing 'name'"
+            assert "name" in svc, "Service missing 'name'"
             assert "healthy" in svc, f"{svc.get('name', '?')} missing 'healthy'"
             assert "description" in svc, f"{svc['name']} missing 'description'"
             assert "internal_url" in svc, f"{svc['name']} missing 'internal_url'"
@@ -278,7 +277,7 @@ class TestCrossEndpointConsistency:
 
         d_names = {s["name"] for s in discover["services"]}
         h_names = {s["name"] for s in health["services"]}
-        assert d_names == h_names, f"Service names differ between endpoints"
+        assert d_names == h_names, "Service names differ between endpoints"
 
     def test_discover_and_health_same_counts(self):
         discover = get_json("/api/v1/discover")

@@ -9,13 +9,12 @@ Single ingress point for all backend services. Provides:
 """
 
 import os
-import json
-import httpx
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, status
+
+import httpx
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import BaseModel
 
 app = FastAPI(
     title="StackDeploy Dashboard API",
