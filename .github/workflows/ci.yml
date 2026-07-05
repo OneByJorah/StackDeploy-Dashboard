@@ -16,11 +16,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Verify test directory
+        run: ls -la tests/
 
       - name: Install dependencies
         run: |
