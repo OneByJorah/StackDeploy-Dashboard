@@ -13,7 +13,8 @@ from typing import Optional
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI(
@@ -24,6 +25,41 @@ app = FastAPI(
 
 # Security: auto_error=False allows unauthenticated read-only access
 security = HTTPBasic(auto_error=False)
+
+# ── Security Headers Middleware ────────────────────────────────────────────────
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    """Add security headers to all responses."""
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # CSP: permissive enough for inline styles/scripts in the onboarding dashboard
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self' data:; "
+        "connect-src 'self'"
+    )
+    return response
+
+
+# ── CORS Middleware ────────────────────────────────────────────────────────────
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_methods=["GET"],
+    allow_headers=[],
+    allow_credentials=False,
+)
 
 # ── Config (from env) ─────────────────────────────────────────────────────────
 GATEWAY_USERNAME = os.getenv("GATEWAY_USERNAME", "admin")
@@ -272,6 +308,12 @@ body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0
 </div>
 
 <script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 async function refreshStatus() {
   document.getElementById('service-grid').innerHTML = '<div class="loading">⟳ Refreshing...</div>';
   try {
@@ -299,9 +341,9 @@ async function refreshStatus() {
       html += `
         <div class="service-card">
           <div class="service-info">
-            <div class="name">${s.name}</div>
-            <div class="desc">${s.description}</div>
-            <div class="service-url">${s.internal_url}</div>
+            <div class="name">${escapeHtml(s.name)}</div>
+            <div class="desc">${escapeHtml(s.description)}</div>
+            <div class="service-url">${escapeHtml(s.internal_url)}</div>
           </div>
           <div>
             <span class="service-status ${statusClass}">${statusText}</span>
