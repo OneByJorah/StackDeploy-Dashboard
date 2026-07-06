@@ -1,0 +1,7 @@
+repo: StackDeploy-Dashboard
+class: Dashboard / DevOps
+org: OneByJorah
+license: MIT
+production_score: 60
+last_audit: "2026-07-05"
+deploy_target: scratch
