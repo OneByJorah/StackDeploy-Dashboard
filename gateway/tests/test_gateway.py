@@ -1,5 +1,5 @@
 """
-Unit tests for the StackDeploy Dashboard Gateway API.
+Unit tests for the ForgeDash Gateway API.
 
 Uses FastAPI TestClient with httpx mocking to avoid external network calls.
 """
@@ -61,7 +61,7 @@ class TestHealthEndpoint:
         response = client.get("/health")
         data = response.json()
         assert data["status"] == "OPERATIONAL"
-        assert data["service"] == "StackDeploy Dashboard Gateway"
+        assert data["service"] == "ForgeDash Gateway"
         assert data["version"] == "2.0.0"
 
     def test_health_does_not_require_auth(self):
@@ -98,7 +98,7 @@ class TestDiscoverEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert "services" in data
-        assert data["platform"] == "StackDeploy Dashboard"
+        assert data["platform"] == "ForgeDash"
 
     @patch("server.httpx.AsyncClient")
     def test_discover_schema_all_healthy(self, mock_async_client):
@@ -108,7 +108,7 @@ class TestDiscoverEndpoint:
         response = client.get("/api/v1/discover")
         data = response.json()
 
-        assert data["platform"] == "StackDeploy Dashboard"
+        assert data["platform"] == "ForgeDash"
         assert data["version"] == "2.0.0"
         assert "services" in data
         assert "healthy_count" in data
@@ -257,7 +257,7 @@ class TestOnboardingEndpoints:
     def test_onboard_contains_title(self):
         """GET /onboard should contain the dashboard title."""
         response = client.get("/onboard")
-        assert "StackDeploy Dashboard" in response.text
+        assert "ForgeDash" in response.text
         assert "Service Islands" in response.text
         assert "Agent Onboarding API" in response.text
 
@@ -271,7 +271,7 @@ class TestOnboardingEndpoints:
         response = client.get("/")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
-        assert "StackDeploy Dashboard" in response.text
+        assert "ForgeDash" in response.text
 
 
 # ── Auth edge cases ─────────────────────────────────────────────────────────
