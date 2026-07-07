@@ -1,0 +1,18 @@
+repo: ForgeDash
+class: Docker, Infrastructure, Web, AI, Agent, Python, Dashboard
+org: OneByJorah
+owner: Jhonattan L. Jimenez
+license: MIT
+production_score: 71
+status: DEGRADED
+last_audit: 2026-07-05
+last_publish: 
+standards_version: "2.1"
+dependencies:
+  - vendor/honcho
+  - vendor/headroom
+deploy_target: scratch
+tailscale_only: true
+public_facing: false
+community_sla_hours: 48
+adoption_tracked: false

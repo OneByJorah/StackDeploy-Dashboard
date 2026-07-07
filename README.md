@@ -1,8 +1,8 @@
-# StackDeploy Dashboard
+# ForgeDash
 
 Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Camofox, Obsidian, and CloakBrowser behind a single gateway with auto-discoverable APIs, Tailscale mesh, and optional Cloudflare Tunnel for public HTTPS. Optionally add Ollama for local LLM inference.
 
-[![CI](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml)
+[![CI](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml)
 ![Version](https://img.shields.io/badge/version-2.0.0-FFB300?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-FFB300?style=flat-square)
 ![Build](https://img.shields.io/badge/build-passing-FFB300?style=flat-square)
@@ -14,8 +14,8 @@ Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Camofox,
 ### Deploy (current)
 
 ```bash
-git clone https://github.com/OneByJorah/StackDeploy-Dashboard.git
-cd StackDeploy-Dashboard
+git clone https://github.com/OneByJorah/ForgeDash.git
+cd ForgeDash
 cp .env.example .env
 # Edit .env with your passwords: HONCHO_DB_PASSWORD, etc.
 docker compose up -d
@@ -86,7 +86,7 @@ graph TB
     style I fill:#1a1a2e,stroke:#10b981,color:#fff
 ```
 
-StackDeploy Dashboard is the control-plane island in the JorahOne archipelago — the single ingress through which agents discover and connect to every service.
+ForgeDash is the control-plane island in the JorahOne archipelago — the single ingress through which agents discover and connect to every service.
 
 ## Setup
 
@@ -110,7 +110,7 @@ sudo ./bootstrap.sh     # Copies .env, pulls images, starts stack, runs healthch
 Ollama is not included in the default compose stack. To add it, deploy Ollama separately:
 
 ```bash
-docker run -d --name ollama --network stackdeploy-dashboard_default -p 11434:11434 ollama/ollama
+docker run -d --name ollama --network forgedash_default -p 11434:11434 ollama/ollama
 docker exec ollama ollama pull llama3.2:1b
 ```
 

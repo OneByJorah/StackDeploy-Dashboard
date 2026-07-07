@@ -1,5 +1,5 @@
 """
-StackDeploy Dashboard — Gateway API
+ForgeDash — Gateway API
 
 Single ingress point for all backend services. Provides:
   - /onboard    → HTML onboarding page for human operators
@@ -18,7 +18,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI(
-    title="StackDeploy Dashboard API",
+    title="ForgeDash API",
     version="2.0.0",
     description="Self-hosted all-in-one API platform — auto-discover services, check health, and configure agents.",
 )
@@ -113,7 +113,7 @@ SERVICE_REGISTRY = {
     "gateway": {
         "host": "gateway",
         "port": 9090,
-        "description": "StackDeploy Gateway API (this service)",
+        "description": "ForgeDash Gateway API (this service)",
         "health_endpoint": "/health",
     },
 }
@@ -179,7 +179,7 @@ async def health():
     """Basic health check for the gateway itself."""
     return {
         "status": "OPERATIONAL",
-        "service": "StackDeploy Dashboard Gateway",
+        "service": "ForgeDash Gateway",
         "version": "2.0.0",
     }
 
@@ -219,7 +219,7 @@ async def discover(credentials: Optional[str] = Depends(verify_admin_optional)):
     tailscale_hostname = os.getenv("TS_CERT_DOMAIN", "")
 
     return {
-        "platform": "StackDeploy Dashboard",
+        "platform": "ForgeDash",
         "version": "2.0.0",
         "tailnet_hostname": tailscale_hostname,
         "cloudflare_domain": os.getenv("CLOUDFLARE_TUNNEL_DOMAIN", ""),
@@ -237,7 +237,7 @@ ONBOARDING_HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StackDeploy Dashboard — Onboarding</title>
+<title>ForgeDash — Onboarding</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0e1a; color: #e2e8f0; min-height: 100vh; }
@@ -276,7 +276,7 @@ body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0
 <body>
 <div class="container">
   <div class="header">
-    <h1>⛭ StackDeploy Dashboard</h1>
+    <h1>⛭ ForgeDash</h1>
     <p>Self-hosted API platform — auto-discover all services</p>
     <div id="status-badge" class="badge badge-ok">● Checking...</div>
   </div>
@@ -303,7 +303,7 @@ body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0
   <div id="discover-json" class="discover-json">Loading...</div>
 
   <div class="footer">
-    JorahOne LLC · StackDeploy Dashboard v2.0
+    JorahOne LLC · ForgeDash v2.0
   </div>
 </div>
 

@@ -1,5 +1,5 @@
 """
-Integration tests for the StackDeploy Dashboard Gateway.
+Integration tests for the ForgeDash Gateway.
 
 These tests hit the live, deployed stack (gateway on localhost:9090).
 They verify that the actual running services report correct health,
@@ -31,7 +31,7 @@ ALWAYS_ONLINE = {
     "gateway": {
         "host": "gateway",
         "port": 9090,
-        "description": "StackDeploy Gateway API",
+        "description": "ForgeDash Gateway API",
     },
     "searxng": {
         "host": "searxng",
@@ -109,7 +109,7 @@ class TestHealthEndpoint:
     def test_health_returns_200(self):
         data = get_json("/health")
         assert data["status"] == "OPERATIONAL"
-        assert data["service"] == "StackDeploy Dashboard Gateway"
+        assert data["service"] == "ForgeDash Gateway"
         assert data["version"] == "2.0.0"
 
     def test_health_no_auth_required(self):
@@ -131,7 +131,7 @@ class TestHealthEndpoint:
 class TestDiscoverEndpoint:
     def test_discover_returns_200(self):
         data = get_json("/api/v1/discover")
-        assert data["platform"] == "StackDeploy Dashboard"
+        assert data["platform"] == "ForgeDash"
         assert data["version"] == "2.0.0"
 
     def test_discover_lists_all_services(self):
@@ -191,7 +191,7 @@ class TestDiscoverEndpoint:
         """Wrong auth should still return data (read-only, auto_error=False)."""
         data = get_json("/api/v1/discover", auth=("admin", "wrong"))
         assert "services" in data
-        assert data["platform"] == "StackDeploy Dashboard"
+        assert data["platform"] == "ForgeDash"
 
     def test_discover_includes_healthy_count(self):
         data = get_json("/api/v1/discover")
@@ -280,7 +280,7 @@ class TestAggregatedHealthEndpoint:
 class TestOnboardingEndpoints:
     def test_onboard_returns_html(self):
         html = get_text("/onboard")
-        assert "StackDeploy Dashboard" in html
+        assert "ForgeDash" in html
         assert "Service Islands" in html
         assert "Agent Onboarding API" in html
         assert "/api/v1/discover" in html
@@ -297,7 +297,7 @@ class TestOnboardingEndpoints:
 
     def test_root_returns_onboarding_html(self):
         html = get_text("/")
-        assert "StackDeploy Dashboard" in html
+        assert "ForgeDash" in html
         assert "Service Islands" in html
 
     def test_onboard_has_health_link(self):
