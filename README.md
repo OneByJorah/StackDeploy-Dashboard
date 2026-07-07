@@ -7,6 +7,10 @@ Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Ollama, 
 ![License](https://img.shields.io/badge/license-MIT-FFB300?style=flat-square)
 ![Build](https://img.shields.io/badge/build-passing-FFB300?style=flat-square)
 
+## 📸 Screenshot
+
+This is a CLI/backend-only tool. No screenshots available.
+
 ## Quick Start
 
 ### Zero-config auto-deploy (recommended)
