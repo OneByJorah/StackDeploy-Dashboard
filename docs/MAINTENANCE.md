@@ -16,5 +16,5 @@ docker compose up -d
 ## Backup Honcho memory
 
 ```bash
-tar czf honcho-backup.tgz /var/lib/docker/volumes/stackdeploy-dashboard_honcho-postgres/_data
+tar czf honcho-backup.tgz /var/lib/docker/volumes/forgedash_honcho-postgres/_data
 ```

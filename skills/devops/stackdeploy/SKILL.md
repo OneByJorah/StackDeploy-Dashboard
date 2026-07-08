@@ -1,15 +1,15 @@
 ---
 name: stackdeploy
-description: Run StackDeploy and integrate its services (SearXNG, Camofox, Obsidian, Qdrant, CloakBrowser) with Hermes Agent.
+description: Run ForgeDash and integrate its services (SearXNG, Camofox, Obsidian, Qdrant, CloakBrowser) with Hermes Agent.
 version: "1.0.0"
 metadata:
   hermes:
     tags: [stackdeploy, ops, docker, searxng, camofox, obsidian, qdrant, cloackbrowser]
 ---
 
-# StackDeploy Integration
+# ForgeDash Integration
 
-StackDeploy provides local AI-friendly infrastructure: SearXNG for search, Camofox for browser automation, Obsidian for notes, Qdrant for vector storage, and optional Honcho/llama.cpp. This skill helps you install, configure, and use StackDeploy with Hermes.
+ForgeDash provides local AI-friendly infrastructure: SearXNG for search, Camofox for browser automation, Obsidian for notes, Qdrant for vector storage, and optional Honcho/llama.cpp. This skill helps you install, configure, and use ForgeDash with Hermes.
 
 ## Prerequisites
 - Docker & Docker Compose
@@ -18,10 +18,10 @@ StackDeploy provides local AI-friendly infrastructure: SearXNG for search, Camof
 
 ## Quick Setup
 
-1. Clone the StackDeploy repository:
+1. Clone the ForgeDash repository:
    ```bash
-   git clone https://github.com/OneByJorah/StackDeploy.git
-   cd StackDeploy
+   git clone https://github.com/OneByJorah/ForgeDash.git
+   cd ForgeDash
    ```
 
 2. Configure environment:
@@ -51,13 +51,13 @@ StackDeploy provides local AI-friendly infrastructure: SearXNG for search, Camof
    ```
 
 ## Default Paths
-- Repo: `~/StackDeploy` (or wherever you cloned it)
-- Obsidian Vault: `~/StackDeploy/obsidian-vault` by default; configurable via `OBSIDIAN_VAULT_PATH` in `.env`.
+- Repo: `~/ForgeDash` (or wherever you cloned it)
+- Obsidian Vault: `~/ForgeDash/obsidian-vault` by default; configurable via `OBSIDIAN_VAULT_PATH` in `.env`.
 
 ## Verify
 ```bash
 # Check service health
-cd ~/StackDeploy
+cd ~/ForgeDash
 docker compose ps
 bash tests/smoke.sh
 
@@ -74,4 +74,4 @@ Once configured, use Hermes’s web search normally. The agent will route querie
 - If Camofox shows `browserConnected: false`, it will connect on first automation task.
 - Ensure `node_modules` exists in `browser-search` (run `npm install`).
 
-For more details, see the StackDeploy documentation: `docs/` in the repository.
+For more details, see the ForgeDash documentation: `docs/` in the repository.
