@@ -1,5 +1,5 @@
 """
-StackDeploy Dashboard — Gateway API
+ForgeDash — Gateway API
 
 Single ingress point for all backend services. Provides:
   - /onboard    → HTML onboarding page for human operators
@@ -13,17 +13,53 @@ from typing import Optional
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI(
-    title="StackDeploy Dashboard API",
+    title="ForgeDash API",
     version="2.0.0",
     description="Self-hosted all-in-one API platform — auto-discover services, check health, and configure agents.",
 )
 
 # Security: auto_error=False allows unauthenticated read-only access
 security = HTTPBasic(auto_error=False)
+
+# ── Security Headers Middleware ────────────────────────────────────────────────
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    """Add security headers to all responses."""
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # CSP: permissive enough for inline styles/scripts in the onboarding dashboard
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self' data:; "
+        "connect-src 'self'"
+    )
+    return response
+
+
+# ── CORS Middleware ────────────────────────────────────────────────────────────
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_methods=["GET"],
+    allow_headers=[],
+    allow_credentials=False,
+)
 
 # ── Config (from env) ─────────────────────────────────────────────────────────
 GATEWAY_USERNAME = os.getenv("GATEWAY_USERNAME", "admin")
@@ -46,7 +82,7 @@ SERVICE_REGISTRY = {
     },
     "honcho": {
         "host": "honcho",
-        "port": 8000,
+        "port": 8081,
         "description": "AI memory & session management",
         "health_endpoint": "/health",
     },
@@ -77,7 +113,7 @@ SERVICE_REGISTRY = {
     "gateway": {
         "host": "gateway",
         "port": 9090,
-        "description": "StackDeploy Gateway API (this service)",
+        "description": "ForgeDash Gateway API (this service)",
         "health_endpoint": "/health",
     },
 }
@@ -143,7 +179,7 @@ async def health():
     """Basic health check for the gateway itself."""
     return {
         "status": "OPERATIONAL",
-        "service": "StackDeploy Dashboard Gateway",
+        "service": "ForgeDash Gateway",
         "version": "2.0.0",
     }
 
@@ -183,7 +219,7 @@ async def discover(credentials: Optional[str] = Depends(verify_admin_optional)):
     tailscale_hostname = os.getenv("TS_CERT_DOMAIN", "")
 
     return {
-        "platform": "StackDeploy Dashboard",
+        "platform": "ForgeDash",
         "version": "2.0.0",
         "tailnet_hostname": tailscale_hostname,
         "cloudflare_domain": os.getenv("CLOUDFLARE_TUNNEL_DOMAIN", ""),
@@ -201,7 +237,7 @@ ONBOARDING_HTML = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StackDeploy Dashboard — Onboarding</title>
+<title>ForgeDash — Onboarding</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0e1a; color: #e2e8f0; min-height: 100vh; }
@@ -240,7 +276,7 @@ body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0
 <body>
 <div class="container">
   <div class="header">
-    <h1>⛭ StackDeploy Dashboard</h1>
+    <h1>⛭ ForgeDash</h1>
     <p>Self-hosted API platform — auto-discover all services</p>
     <div id="status-badge" class="badge badge-ok">● Checking...</div>
   </div>
@@ -267,11 +303,17 @@ body { font-family: 'JetBrains Mono', 'Courier New', monospace; background: #0a0
   <div id="discover-json" class="discover-json">Loading...</div>
 
   <div class="footer">
-    JorahOne LLC · StackDeploy Dashboard v2.0
+    JorahOne LLC · ForgeDash v2.0
   </div>
 </div>
 
 <script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 async function refreshStatus() {
   document.getElementById('service-grid').innerHTML = '<div class="loading">⟳ Refreshing...</div>';
   try {
@@ -299,9 +341,9 @@ async function refreshStatus() {
       html += `
         <div class="service-card">
           <div class="service-info">
-            <div class="name">${s.name}</div>
-            <div class="desc">${s.description}</div>
-            <div class="service-url">${s.internal_url}</div>
+            <div class="name">${escapeHtml(s.name)}</div>
+            <div class="desc">${escapeHtml(s.description)}</div>
+            <div class="service-url">${escapeHtml(s.internal_url)}</div>
           </div>
           <div>
             <span class="service-status ${statusClass}">${statusText}</span>

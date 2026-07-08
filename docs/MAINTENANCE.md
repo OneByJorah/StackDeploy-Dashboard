@@ -6,14 +6,15 @@
 docker compose restart
 ```
 
-## Update model
+## Update services
 
 ```bash
-docker compose up -d llama-server
+docker compose pull
+docker compose up -d
 ```
 
 ## Backup Honcho memory
 
 ```bash
-tar czf honcho-backup.tgz /home/j1admin/docker/j1-stack-deploy/honcho
+tar czf honcho-backup.tgz /var/lib/docker/volumes/forgedash_honcho-postgres/_data
 ```

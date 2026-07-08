@@ -1,6 +1,6 @@
-# StackDeploy + Hermes Agent
+# ForgeDash + Hermes Agent
 
-This doc describes how the Hermes Agent uses the local StackDeploy services.
+This doc describes how the Hermes Agent uses the local ForgeDash services.
 
 ## Cluster Health
 ```bash
@@ -26,12 +26,12 @@ curl -s -o /dev/null -w 'qdrant=%{http_code}\n' http://localhost:6333/
 
 ## BrowserSearch CLI
 ```bash
-cd /home/j1admin/StackDeploy/browser-search
+cd /home/j1admin/ForgeDash/browser-search
 node scripts/cloak/cloak-fetch.mjs "https://example.com" --format markdown
 ```
 
 ## Smoke test
 ```bash
-cd /home/j1admin/StackDeploy
+cd /home/j1admin/ForgeDash
 bash tests/smoke.sh
 ```
