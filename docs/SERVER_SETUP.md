@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Docker + Docker Compose v2+
-- Tailscale installed
+- Mesh-VPN installed
 
 ## Install
 
@@ -30,7 +30,7 @@ docker compose up -d
 
 | Variable | Purpose | Notes |
 |---|---|---|
-| `SERVER_IP` | Tailscale or local IP used in docs/examples | Required |
+| `SERVER_IP` | Mesh-VPN or local IP used in docs/examples | Required |
 | `HONCHO_TOKEN` | Auth token for Honcho API | Optional |
 | `HONCHO_DB_PASSWORD` | Postgres password for Honcho backend | Required |
 | `POSTGRES_PASSWORD` | Postgres password | Required |
@@ -81,7 +81,7 @@ docker compose logs -f
 ## Troubleshooting
 
 - If services fail to start, inspect `docker compose up -d && docker compose logs -f`.
-- Ensure `SERVER_IP` matches the host address used by other clients (Tailscale recommended).
+- Ensure `SERVER_IP` matches the host address used by other clients (Mesh-VPN recommended).
 
 ---
 

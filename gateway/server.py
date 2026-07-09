@@ -179,13 +179,13 @@ async def discover(credentials: Optional[str] = Depends(verify_admin_optional)):
         result = await check_service_health(name, svc)
         results.append(result)
 
-    # Tailnet info (if available)
-    tailscale_hostname = os.getenv("TS_CERT_DOMAIN", "")
+    # Mesh info (if available)
+    mesh-vpn_hostname = os.getenv("TS_CERT_DOMAIN", "")
 
     return {
         "platform": "StackDeploy Dashboard",
         "version": "2.0.0",
-        "tailnet_hostname": tailscale_hostname,
+        "mesh_hostname": mesh-vpn_hostname,
         "cloudflare_domain": os.getenv("CLOUDFLARE_TUNNEL_DOMAIN", ""),
         "services": results,
         "healthy_count": sum(1 for r in results if r["healthy"]),
