@@ -157,9 +157,9 @@ class TestDiscoverEndpoint:
             assert svc["description"] == SERVICE_REGISTRY[svc["name"]]["description"]
 
     @patch("server.httpx.AsyncClient")
-    def test_discover_includes_tailnet_hostname(self, mock_async_client):
+    def test_discover_includes_mesh_hostname(self, mock_async_client):
         """TS_CERT_DOMAIN env var should appear in discover response."""
-        os.environ["TS_CERT_DOMAIN"] = "test.tailnet.com"
+        os.environ["TS_CERT_DOMAIN"] = "test.mesh.com"
         mock_async_client.return_value = mock_health_response(healthy=True)
 
         # Re-import app to pick up env var — but lazy approach: just check directly
@@ -168,7 +168,7 @@ class TestDiscoverEndpoint:
         c2 = TestClient(app2)
         response = c2.get("/api/v1/discover")
         data = response.json()
-        assert data["tailnet_hostname"] == "test.tailnet.com"
+        assert data["mesh_hostname"] == "test.mesh.com"
 
     @patch("server.httpx.AsyncClient")
     def test_discover_includes_cloudflare_domain(self, mock_async_client):
