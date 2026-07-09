@@ -117,23 +117,26 @@ services:
     restart: unless-stopped
 
   # --- Optional: CloakBrowser for protected sites ---
-  cloakbrowser:
-    build:
-      context: ./browser-search
-      dockerfile: docker/Dockerfile.cloak
-    container_name: cloak-browser
-    shm_size: 2g
-    ports:
-      - "9222:9222"
-    environment:
-      CLOAK_HEADLESS: "true"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9222/json/version || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
+  # DISABLED: the referenced build context docker/Dockerfile.cloak was never
+  # committed to the repo, so `docker compose build` fails. Re-enable once the
+  # Dockerfile is added (see FIXES.md). Core stack builds/deploys without it.
+  # cloakbrowser:
+  #   build:
+  #     context: ./browser-search
+  #     dockerfile: docker/Dockerfile.cloak
+  #   container_name: cloak-browser
+  #   shm_size: 2g
+  #   ports:
+  #     - "9222:9222"
+  #   environment:
+  #     CLOAK_HEADLESS: "true"
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "curl -sf http://localhost:9222/json/version || exit 1" ]
+  #   interval: 30s
+  #   timeout: 10s
+  #   retries: 3
+  #   start_period: 30s
+  #   restart: unless-stopped
 
 volumes:
   searxng-data:
