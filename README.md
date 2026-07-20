@@ -1,8 +1,8 @@
-# StackDeploy Dashboard
+# ForgeDash
 
 Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Ollama, Camofox, and Obsidian behind a single gateway with auto-discoverable APIs, Tailscale mesh, and optional Cloudflare Tunnel for public HTTPS. Choose between local LLM inference (Ollama) or cloud API (OpenRouter) for Honcho's AI features.
 
-[![CI](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml)
+[![CI](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml)
 ![Version](https://img.shields.io/badge/version-2.0.0-FFB300?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-FFB300?style=flat-square)
 ![Build](https://img.shields.io/badge/build-passing-FFB300?style=flat-square)
@@ -12,8 +12,8 @@ Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Ollama, 
 ### Zero-config auto-deploy (recommended)
 
 ```bash
-git clone https://github.com/OneByJorah/StackDeploy-Dashboard.git
-cd StackDeploy-Dashboard
+git clone https://github.com/OneByJorah/ForgeDash.git
+cd ForgeDash
 sudo ./bootstrap.sh --auto
 ```
 
@@ -77,7 +77,7 @@ graph TB
     style I fill:#1a1a2e,stroke:#10b981,color:#fff
 ```
 
-StackDeploy Dashboard is the control-plane island in the JorahOne archipelago — the single ingress through which agents discover and connect to every service.
+ForgeDash is the control-plane island in the JorahOne archipelago — the single ingress through which agents discover and connect to every service.
 
 ## Setup
 
@@ -195,4 +195,4 @@ Response includes each service's internal URL, health status, and description. T
 
 ## License
 
-MIT — JorahOne LLC
+MIT © Jhonattan L. Jimenez / JorahOne LLC
