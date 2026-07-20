@@ -135,6 +135,25 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  # --- Gateway: onboarding dashboard + agent auto-discovery API ---
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: forgedash-gateway
+    ports:
+      - "9090:9090"
+    environment:
+      GATEWAY_USERNAME: ${GATEWAY_USERNAME:-admin}
+      GATEWAY_PASSWORD: ${GATEWAY_PASSWORD:-changeme}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9090/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
 volumes:
   searxng-data:
   camofox-data:

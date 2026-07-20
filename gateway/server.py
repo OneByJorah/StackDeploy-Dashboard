@@ -46,9 +46,9 @@ SERVICE_REGISTRY = {
     },
     "honcho": {
         "host": "honcho",
-        "port": 8000,
+        "port": 8081,
         "description": "AI memory & session management",
-        "health_endpoint": "/health",
+        "health_endpoint": "/healthz",
     },
     "camofox": {
         "host": "camofox-browser",

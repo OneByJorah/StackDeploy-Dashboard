@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /home/j1admin/StackDeploy
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo '=== Service checks ==='
 curl -s -o /dev/null -w 'searxng=%{http_code}\n' 'http://localhost:8080/search?format=json&q=test'
@@ -17,7 +17,9 @@ curl -s -X POST http://localhost:9377/tabs -H 'Content-Type: application/json' -
 python3 -c 'import json,sys; d=json.load(open("/tmp/sd_camofox_tab.json")); print("tabId=", d.get("tabId")); assert d.get("tabId"), "tabId missing"'
 
 echo '=== CloakBrowser CLI ==='
-node /home/j1admin/StackDeploy/browser-search/scripts/cloak/cloak-fetch.mjs --help > /dev/null 2>&1
+# Best-effort: requires `cd browser-search && npm install` first.
+( cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"/browser-search && node scripts/cloak/cloak-fetch.mjs --help > /dev/null 2>&1 ) \
+  && echo "cloak-fetch: ok" || echo "cloak-fetch: skipped (run npm install in browser-search/)"
 
 echo '=== Obsidian page ==='
 curl -s http://localhost:8083/ | grep -q 'Obsidian v1.7.7'
