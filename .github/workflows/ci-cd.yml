@@ -1,4 +1,4 @@
-name: StackDeploy CI/CD
+name: ForgeDash CI/CD
 
 on:
   push:

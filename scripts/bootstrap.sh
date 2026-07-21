@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== StackDeploy Bootstrap ==="
+echo "=== ForgeDash Bootstrap ==="
 echo ""
 
 # Check Docker
@@ -43,7 +43,7 @@ echo "🏥 Running health check..."
 ./scripts/healthcheck.sh localhost
 
 echo ""
-echo "✅ StackDeploy is ready!"
+echo "✅ ForgeDash is ready!"
 echo ""
 echo "Access points:"
 echo "  Portainer (Admin):  http://localhost:9000"

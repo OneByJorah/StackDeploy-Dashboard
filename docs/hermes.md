@@ -1,6 +1,6 @@
-# StackDeploy + Hermes Agent
+# ForgeDash + Hermes Agent
 
-This doc describes how the Hermes Agent uses the local StackDeploy services.
+This doc describes how the Hermes Agent uses the local ForgeDash services.
 
 ## Cluster Health
 ```bash

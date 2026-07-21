@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# StackDeploy one-shot deploy for Hermes
+# ForgeDash one-shot deploy for Hermes
 # Fixes stale searxng container automatically
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
@@ -14,4 +14,4 @@ if docker ps -a --format '{{.Names}}' | grep -x searxng >/dev/null 2>&1; then
 fi
 cd "$REPO_DIR/browser-search" && [ -d node_modules ] || npm install
 bash "$REPO_DIR/tests/smoke.sh"
-echo "StackDeploy ready at $REPO_DIR"
+echo "ForgeDash ready at $REPO_DIR"
