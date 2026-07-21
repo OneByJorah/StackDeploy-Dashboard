@@ -1,23 +1,30 @@
-# StackDeploy Dashboard
+<div align="center">
 
-Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Ollama, Camofox, and Obsidian behind a single gateway with auto-discoverable APIs, Tailscale mesh, and optional Cloudflare Tunnel for public HTTPS. Choose between local LLM inference (Ollama) or cloud API (OpenRouter) for Honcho's AI features.
+# ForgeDash
 
-[![CI](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/StackDeploy-Dashboard/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-2.0.0-FFB300?style=flat-square)
+**Self-hosted control plane and onboarding gateway for AI service stacks.**
+
+[![CI](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml/badge.svg)](https://github.com/OneByJorah/ForgeDash/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-FFB300?style=flat-square)
-![Build](https://img.shields.io/badge/build-passing-FFB300?style=flat-square)
+![Version](https://img.shields.io/badge/version-2.0.0-FFB300?style=flat-square)
+
+</div>
+
+ForgeDash deploys SearXNG, Qdrant, Honcho, Ollama, Camofox, and Obsidian behind a single gateway with auto-discoverable APIs and an onboarding dashboard. Choose between local LLM inference (Ollama) or a cloud API (OpenRouter) for Honcho's AI features.
+
+---
 
 ## Quick Start
 
 ### Zero-config auto-deploy (recommended)
 
 ```bash
-git clone https://github.com/OneByJorah/StackDeploy-Dashboard.git
-cd StackDeploy-Dashboard
+git clone https://github.com/OneByJorah/ForgeDash.git
+cd ForgeDash
 sudo ./bootstrap.sh --auto
 ```
 
-This single command generates secure passwords, deploys the full stack (gateway, SearXNG, Qdrant, Honcho, Obsidian, Camofox, Ollama), pulls a 1B LLM model (`llama3.2:1b`), and auto-configures Honcho to use it — zero prompts, zero manual editing.
+This single command generates secure passwords, deploys the full stack (gateway, SearXNG, Qdrant, Honcho, Obsidian, Camofox, Ollama), pulls a default 1B LLM model (`llama3.2:1b`), and auto-configures Honcho to use it — zero prompts, zero manual editing.
 
 ### Interactive setup
 
@@ -28,56 +35,19 @@ sudo ./bootstrap.sh     # Deploy the stack
 
 Open **http://localhost:9090** for the onboarding dashboard or **http://localhost:9090/api/v1/discover** for the agent auto-discovery API.
 
+---
+
 ## Features
 
 - **Onboarding API** — Agents hit `/api/v1/discover` to auto-configure to all local services
-- **One-command auto-deploy** — `sudo ./bootstrap.sh --auto` generates everything: secure passwords, Ollama config, model pull, Honcho setup. Zero interaction needed
+- **One-command auto-deploy** — `sudo ./bootstrap.sh --auto` generates everything: secure passwords, Ollama config, model pull, Honcho setup
 - **Interactive Setup** — `./setup.sh` prompts for passwords, generates `.env`, no manual editing
-- **Local LLM (Ollama)** — Run Honcho entirely offline with local model inference (opt-in via `--with-local-llm` or `--auto`)
-- **Cloud or Local** — Choose between local Ollama or cloud OpenRouter during setup; `.env.honcho` configured automatically
-- **Tailscale Mesh** — Each service gets its own Tailscale identity for secure mesh networking
-- **Cloudflare Tunnel** — Optional public HTTPS access via Cloudflare Tunnel (no open firewall ports)
+- **Local LLM (Ollama)** — Run Honcho entirely offline with local model inference (opt-in)
+- **Cloud or Local** — Choose between local Ollama or cloud OpenRouter during setup
+- **Cloudflare Tunnel** — Optional public HTTPS access (no open firewall ports)
 - **Auto-Discovery** — Gateway aggregates health and connection info for all backend services
 
-## Architecture
-
-```mermaid
-graph TB
-    subgraph Public
-        A[Cloudflare Tunnel]
-    end
-    subgraph Tailscale_Mesh
-        B[Gateway :9090]
-        C[SearXNG :8080]
-        D[Qdrant :6333]
-        E[Honcho :8000]
-    end
-    subgraph Local_LLM
-        I[Ollama :11434]
-    end
-    subgraph Local_Network
-        F[Camofox :9377]
-        G[Obsidian :8083]
-        H[CloakBrowser :9222]
-    end
-
-    A -->|HTTPS| B
-    B -->|Discover API| C
-    B -->|Discover API| D
-    B -->|Discover API| E
-    B -->|Discover API| F
-    B -->|Discover API| G
-    B -->|Discover API| H
-    E ---->|LLM inference| I
-
-    style B fill:#1a1a2e,stroke:#FFB300,color:#fff
-    style C fill:#1a1a2e,stroke:#FFB300,color:#fff
-    style D fill:#1a1a2e,stroke:#FFB300,color:#fff
-    style E fill:#1a1a2e,stroke:#FFB300,color:#fff
-    style I fill:#1a1a2e,stroke:#10b981,color:#fff
-```
-
-StackDeploy Dashboard is the control-plane island in the JorahOne archipelago — the single ingress through which agents discover and connect to every service.
+---
 
 ## Setup
 
@@ -89,11 +59,11 @@ StackDeploy Dashboard is the control-plane island in the JorahOne archipelago �
 
 This interactive script will prompt for:
 1. **Admin credentials** — username/password for the gateway dashboard
-2. **Tailscale auth key** — optional, for mesh networking (get one from https://login.tailscale.com/admin/settings/keys)
-3. **Cloudflare Tunnel token** — optional, for public HTTPS access (create a tunnel at https://one.dash.cloudflare.com/)
-4. **LLM Provider** — choose between:
-   - **(L)ocal Ollama** — runs entirely on-device, no API key needed. You pick a default model (default: `llama3.2`)
-   - **(C)loud API (OpenRouter)** — uses OpenRouter or any OpenAI-compatible API. You provide an API key
+2. **Tailscale auth key** — optional, for mesh networking
+3. **Cloudflare Tunnel token** — optional, for public HTTPS access
+4. **LLM provider** — choose between:
+   - **(L)ocal Ollama** — runs entirely on-device, no API key needed
+   - **(C)loud API (OpenRouter)** — uses OpenRouter or any OpenAI-compatible API
 5. **Service passwords** — Honcho DB, Camofox API keys
 
 All credentials are auto-generated if left blank. The `.env.honcho` file is generated automatically based on your LLM provider choice — no manual editing needed.
@@ -110,8 +80,6 @@ sudo ./bootstrap.sh --auto --model llama3.2:1b
 # With custom model + Tailscale + Cloudflare
 sudo ./bootstrap.sh --auto --with-tailscale --with-public
 ```
-
-`--auto` does everything: generates a secure `.env` with random passwords, generates `.env.honcho` pointing to local Ollama, deploys all services, pulls the default model (`llama3.2:1b`), and restarts Honcho to activate it. The admin password is printed at the end.
 
 ### Manual deploy
 
@@ -131,14 +99,13 @@ sudo ./bootstrap.sh --with-tailscale
 # With Tailscale + Cloudflare Tunnel (public HTTPS)
 sudo ./bootstrap.sh --with-tailscale --with-public
 
-# With everything
-sudo ./bootstrap.sh --with-tailscale --with-public --with-local-llm
-
 # Skip setup prompt (use existing .env)
 sudo ./bootstrap.sh --skip-setup
 ```
 
-### Local LLM (Ollama) Quick Start
+---
+
+## Local LLM (Ollama) Quick Start
 
 When using `--with-local-llm` or `--auto`, Honcho is automatically configured to route all AI requests (memory summarization, reasoning, embeddings) to the local Ollama instance. The default 1B model is pulled automatically. To manage models:
 
@@ -153,11 +120,13 @@ docker exec ollama ollama list
 docker exec ollama ollama rm qwen2.5:0.5b
 ```
 
-The Ollama API is also discoverable via the gateway at `http://ollama:11434` for other services to use. The Honcho config applies the same model across all features (deriver, summarization, dialectic, dream, embeddings) via per-feature env var overrides.
+The Ollama API is discoverable via the gateway at `http://ollama:11434` for other services to use. The Honcho config applies the same model across all features via per-feature env var overrides.
+
+---
 
 ## Agent Onboarding
 
-Agents (Hermes, Claude Code, custom scripts) can auto-configure to the API stack by hitting the discover endpoint:
+Agents can auto-configure to the API stack by hitting the discover endpoint:
 
 ```bash
 # Get all available services with connection details
@@ -174,6 +143,8 @@ Response includes each service's internal URL, health status, and description. T
 | `/api/v1/discover` | Agent auto-discovery JSON (auth required) |
 | `/api/v1/health` | Aggregated health status of all services |
 
+---
+
 ## Services
 
 | Service | Internal URL | Description |
@@ -186,13 +157,48 @@ Response includes each service's internal URL, health status, and description. T
 | Obsidian | `http://obsidian:8080` | Notes & knowledge management |
 | CloakBrowser | `http://cloak-browser:9222` | Protected browser |
 
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `SERVER_IP` | Host/mesh IP for service URLs | `127.0.0.1` |
+| `OBSIDIAN_VAULT_PATH` | Host path for Obsidian vault | `/opt/forgedash/ObsidianVault` |
+| `HONCHO_TOKEN` | Honcho API auth token | required |
+| `HONCHO_DB_PASSWORD` | Honcho PostgreSQL password | required |
+| `POSTGRES_PASSWORD` | PostgreSQL superuser password | required |
+| `CAMOFOX_API_KEY` | Camofox auth key | optional |
+| `CAMOFOX_ADMIN_KEY` | Camofox admin key | optional |
+
+---
+
+## CI/CD
+
+- `ci.yml` — Python lint (ruff) and unit tests for the gateway
+- `webpack.yml` — Node build matrix for the browser components
+- `ci-cd.yml` — Lint, build, test, and optional SSH deploy
+
+---
+
 ## Contributing
 
 1. Fork the repo
 2. Create a branch: `fix/your-fix` or `feature/your-feature`
 3. Open a PR against `main`
-4. Response time: I read PRs within 48 hours
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+---
 
 ## License
 
-MIT — JorahOne LLC
+MIT © Jhonattan L. Jimenez
+
+---
+
+## Security
+
+Report vulnerabilities to **info@jorahone.com**. Do not open public issues for security matters.
