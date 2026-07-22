@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SERVER="${1:-localhost}"
-printf "StackDeploy Healthcheck\nTarget: %s\n\n" "$SERVER"
+printf "ForgeDash Healthcheck\nTarget: %s\n\n" "$SERVER"
 
 check_service() {
     local name="$1"

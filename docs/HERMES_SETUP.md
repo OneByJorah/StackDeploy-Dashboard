@@ -4,8 +4,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/OneByJorah/StackDeploy.git
-cd StackDeploy
+git clone https://github.com/OneByJorah/ForgeDash.git
+cd ForgeDash
 
 # 2. Environment
 cp .env.example .env
@@ -43,7 +43,7 @@ honcho:
 
 obsidian:
   enabled: true
-  vault_path: /home/j1admin/ObsidianVault
+  vault_path: /opt/forgedash/ObsidianVault
 ```
 
 For local Obsidian, open the vault folder in the desktop app. Hermes reads and writes notes directly through the Obsidian skill.
