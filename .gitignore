@@ -8,3 +8,6 @@ browser-search/node_modules/
 
 # Honcho env
 .env.honcho
+
+# OneByJorah portfolio tooling
+.venv-screenshot/

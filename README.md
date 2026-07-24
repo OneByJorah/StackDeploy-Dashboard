@@ -1,4 +1,20 @@
-# StackDeploy Dashboard
+<div align="center">
+
+![ForgeDash banner](docs/assets/banner.svg)
+
+# ForgeDash
+
+Self-hosted all-in-one API platform
+
+![License](https://img.shields.io/badge/license-MIT-brightgreen)
+![Language](https://img.shields.io/badge/language-JavaScript-blue)
+</div>
+
+---
+
+<p align="center">
+  <img src="docs/assets/screenshot.png" alt="ForgeDash preview" width="90%">
+</p>
 
 Self-hosted all-in-one API platform — deploy SearXNG, Qdrant, Honcho, Ollama, Camofox, and Obsidian behind a single gateway with auto-discoverable APIs, Tailscale mesh, and optional Cloudflare Tunnel for public HTTPS. Choose between local LLM inference (Ollama) or cloud API (OpenRouter) for Honcho's AI features.
 
@@ -196,3 +212,19 @@ Response includes each service's internal URL, health status, and description. T
 ## License
 
 MIT — JorahOne LLC
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). All contributions follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## 🔒 Security
+
+Found a vulnerability? Please follow our [Security Policy](SECURITY.md) and report privately to `security@jorahone.com`.
+
+## 📄 License
+
+[MIT License](LICENSE) © Jhonattan L. Jimenez (OneByJorah)
+
+---
+
+<p align="center">Built with 🌴 by <a href="https://github.com/OneByJorah">OneByJorah</a> · <a href="https://jorahone.com">jorahone.com</a></p>
