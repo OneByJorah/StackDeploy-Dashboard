@@ -1,57 +1,29 @@
-# Contributing to JorahOne Projects
+# Contributing to OneByJorah projects
 
-First off, thank you for considering contributing! It's people like you that make
-this community great.
+Thanks for taking the time to contribute! Every island in the JorahOne archipelago gets stronger with community help.
 
-## Code of Conduct
+## How to contribute
 
-This project and everyone participating in it is governed by our Code of Conduct.
-By participating, you are expected to uphold this code.
+1. **Open an issue first** for bugs, features, or large refactors so we can align on direction.
+2. **Fork the repo** and create a feature branch (`git checkout -b feature/short-name`).
+3. **Keep changes focused** — one concern per pull request.
+4. **Write clear commit messages** in the imperative: `Add SNMP trap handler`, not `Added handler`.
+5. **Update docs** if your change affects usage, configuration, or architecture.
+6. **Test your change** locally before opening a PR.
 
-## How Can I Contribute?
+## Pull request checklist
 
-### Reporting Bugs
+- [ ] Branch is up to date with the default branch.
+- [ ] README/screenshots are updated if the UI or install steps changed.
+- [ ] No secrets, credentials, or private IPs are committed.
+- [ ] License header is preserved on new source files (MIT).
 
-- **Ensure the bug was not already reported** by searching GitHub Issues.
-- If you're unable to find an open issue addressing the problem, open a new one.
-- Include a **clear title and description**, as much relevant information as possible,
-  and a **code sample** or **executable test case** demonstrating the expected behavior.
+## Code style
 
-### Suggesting Enhancements
+- Python: PEP 8, type hints where helpful.
+- JavaScript/TypeScript: consistent formatting, `const`/`let`, async/await over callbacks.
+- Shell/PowerShell: defensive execution, clear parameter comments.
 
-- Open a new GitHub Issue with the enhancement tag.
-- Provide a clear explanation of why this enhancement would be useful.
+## Questions?
 
-### Pull Requests
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -am 'Add my feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request
-
-### Styleguides
-
-#### Git Commit Messages
-
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Limit the first line to 72 characters or less
-- Reference issues and pull requests liberally after the first line
-
-#### Code Style
-
-Follow the existing code style in the project. When in doubt, match the
-surrounding code. Consistency is key.
-
-## Additional Notes
-
-### Issue and Pull Request Labels
-
-| Label | Description |
-|-------|-------------|
-| `bug` | Something isn't working |
-| `enhancement` | New feature or improvement |
-| `documentation` | Documentation only changes |
-| `security` | Security-related issues |
-| `good first issue` | Good for newcomers |
+Open a [Discussion](https://github.com/OneByJorah/OneByJorah/discussions) or reach out at info@jorahone.com.

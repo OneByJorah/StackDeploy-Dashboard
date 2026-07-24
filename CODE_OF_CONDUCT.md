@@ -1,48 +1,24 @@
-# Contributor Covenant Code of Conduct
+# Code of Conduct
 
-## Our Pledge
+We want the JorahOne community to be welcoming, constructive, and professional.
 
-We as members, contributors, and leaders pledge to make participation in our
-community a harassment-free experience for everyone, regardless of age, body
-size, visible or invisible disability, ethnicity, sex characteristics, gender
-identity and expression, level of experience, education, socio-economic status,
-nationality, personal appearance, race, religion, or sexual identity
-and orientation.
+## Our standards
 
-We pledge to act and interact in ways that contribute to an open, welcoming,
-diverse, inclusive, and healthy community.
+- Be respectful and inclusive.
+- Accept constructive feedback gracefully.
+- Focus on the technical problem, not the person.
+- Help newcomers learn; everyone starts somewhere.
+- Keep discussions relevant and avoid spam or self-promotion.
 
-## Our Standards
+## Unacceptable behavior
 
-Examples of behavior that contributes to a positive environment:
-
-- Demonstrating empathy and kindness toward other people
-- Being respectful of differing opinions, viewpoints, and experiences
-- Giving and gracefully accepting constructive feedback
-- Accepting responsibility and apologizing to those affected by our mistakes
-- Focusing on what is best not just for us as individuals, but for the overall
-  community
-
-Examples of unacceptable behavior:
-
-- The use of sexualized language or imagery, and sexual attention or advances
-- Trolling, insulting or derogatory comments, and personal or political attacks
-- Public or private harassment
-- Publishing others' private information without explicit permission
-- Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+- Harassment, discrimination, or personal attacks.
+- Trolling, insulting comments, or sustained disruption.
+- Sharing private or sensitive information without consent.
+- Distributing malware or intentionally harmful code.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project team at j1admin@onebyjorah.com. All complaints will
-be reviewed and investigated and will result in a response that is deemed
-necessary and appropriate to the circumstances.
+Maintainers may remove, edit, or reject contributions and temporarily or permanently ban anyone for unacceptable behavior.
 
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage],
-version 2.1, available at
-https://www.contributor-covenant.org/version/2/1/code_of_conduct.html.
-
-[homepage]: https://www.contributor-covenant.org
+Report issues to `info@jorahone.com`.
